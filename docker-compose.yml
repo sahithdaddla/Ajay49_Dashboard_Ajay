@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: postgres33
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: new_employee_db
+    ports:
+      - "5404:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  backend:
+    container_name: backend33
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    ports:
+      - "3404:3404"
+    environment:
+      DB_USER: postgres
+      DB_HOST: postgres
+      DB_NAME: new_employee_db
+      DB_PASSWORD: admin123
+      DB_PORT: 5432
+      PORT: 3404
+      NODE_ENV: production
+      FRONTEND_URL: http://44.223.23.145:8012
+      JWT_SECRET: Abderoiouwi@12342
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  login:
+    container_name: login33
+    build:
+      context: ./Frontend/login
+      dockerfile: Dockerfile
+    ports:
+      - "8012:80"
+    restart: unless-stopped
+
+  signup:
+    container_name: signup33
+    build:
+      context: ./Frontend/signup
+      dockerfile: Dockerfile
+    ports:
+      - "8013:80"
+    restart: unless-stopped
+
+  forgot:
+    container_name: forgot33
+    build:
+      context: ./Frontend/forgot
+      dockerfile: Dockerfile
+    ports:
+      - "8010:80"
+    restart: unless-stopped
+
+  dashboard:
+    container_name: dashboard33
+    build:
+      context: ./Frontend/dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "8011:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

