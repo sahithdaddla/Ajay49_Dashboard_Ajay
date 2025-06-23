@@ -643,7 +643,7 @@
                 <button type="submit" id="signupButton" class="form-button" disabled>Sign Up</button>
             </form>
             <div class="links">
-                <a href="http://44.223.23.145:8008/">Already have an account? Login</a>
+                <a href="http://44.223.23.145:8012/">Already have an account? Login</a>
             </div>
         </div>
     </div>
@@ -795,7 +795,7 @@
                 errorElement.textContent = 'Checking email availability...';
                 errorElement.style.color = '#0077ff';
                 
-                const response = await fetch('http://44.223.23.145:3401/check-email-data', {
+                const response = await fetch('http://44.223.23.145:3404/check-email-data', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
@@ -943,7 +943,7 @@
             signupButton.disabled = true;
             signupButton.textContent = 'Signing Up...';
             
-            const response = await fetch('http://44.223.23.145:3401/api/signup', {
+            const response = await fetch('http://44.223.23.145:3404/api/signup', {
                 method: 'POST',
                 body: formData
             });
@@ -958,7 +958,7 @@
             
             // Redirect after successful signup
             setTimeout(() => {
-                window.location.href = 'http://44.223.23.145:8008/login.html';
+                window.location.href = 'http://44.223.23.145:8012/login.html';
             }, 2000);
         } catch (err) {
             showAlert('error', err.message || 'Signup failed. Please try again.');

@@ -80,18 +80,18 @@ logger.info('Environment Configuration:', {
 
 // Server Configuration
 const allowedOrigins = [
-  'http://44.223.23.145:8008',
-  'http://44.223.23.145:8009',
+  'http://44.223.23.145:8012',
+  'http://44.223.23.145:8013',
   'http://44.223.23.145:8010',
   'http://44.223.23.145:8011',
-  'http://44.223.23.145:3401',
+  'http://44.223.23.145:3404',
   'http://127.0.0.1:5500',
   'http://127.0.0.1:5502',
-  'http://44.223.23.145:8008',
-  'http://44.223.23.145:8009',
+  'http://44.223.23.145:8012',
+  'http://44.223.23.145:8013',
   'http://44.223.23.145:8010',
   'http://44.223.23.145:8011',
-  process.env.FRONTEND_URL || 'http://44.223.23.145:8008',
+  process.env.FRONTEND_URL || 'http://44.223.23.145:8012',
 ];
 
 // Enhanced CORS setup
@@ -596,7 +596,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3404;
 app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running on port ${PORT}`);
   logger.info(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
