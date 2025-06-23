@@ -458,7 +458,7 @@
                 <button type="submit" class="login-button">Login</button>
             </form>
             <div class="links">
-                <a href="http://localhost:8007/">Sign Up</a> | <a href="http://localhost:8005">Forgot Password?</a>
+                <a href="http://44.223.23.145:8009/">Sign Up</a> | <a href="http://44.223.23.145:8010">Forgot Password?</a>
             </div>
         </div>
     </div>
@@ -538,7 +538,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
 
   try {
-    const response = await fetch('http://localhost:3000/api/login', {
+    const response = await fetch('http://44.223.23.145:3401/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

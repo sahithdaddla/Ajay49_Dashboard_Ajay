@@ -619,7 +619,7 @@
                 <button type="submit" id="resetPasswordBtn" class="form-button" disabled>Reset Password</button>
             </form>
             <div class="links">
-                <a href="http://localhost:8006/">Back to Login</a>
+                <a href="http://44.223.23.145:8008/">Back to Login</a>
             </div>
         </div>
 
@@ -715,7 +715,7 @@ const checkEmail = debounce(async (email) => {
     }
 
     try {
-        const response = await fetch('http://localhost:3000/check-email-data', {
+        const response = await fetch('http://44.223.23.145:3401/check-email-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -821,7 +821,7 @@ document.getElementById('forgotPasswordForm').addEventListener('submit', async (
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
 
     try {
-        const response = await fetch('http://localhost:3000/api/forgot', {
+        const response = await fetch('http://44.223.23.145:3401/api/forgot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, newPassword, confirmNewPassword })
@@ -831,7 +831,7 @@ document.getElementById('forgotPasswordForm').addEventListener('submit', async (
         if (response.ok) {
             showAlert('success', data.message || 'Password reset successfully!');
             setTimeout(() => {
-                window.location.href = 'http://localhost:8006/';
+                window.location.href = 'http://44.223.23.145:8008/';
             }, 1000);
         } else {
             document.getElementById('confirm-password-error').textContent = data.error || 'Password reset failed';
