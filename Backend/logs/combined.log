@@ -1,0 +1,22 @@
+2025-06-25 13:36:11 [info] Environment Configuration:
+2025-06-25 13:36:11 [info] Server running on port 3404
+2025-06-25 13:36:11 [info] Allowed CORS origins: http://44.223.23.145:8012, http://44.223.23.145:8013, http://44.223.23.145:8010, http://44.223.23.145:3404, http://127.0.0.1:5500, http://127.0.0.1:5502, http://44.223.23.145:8012, http://44.223.23.145:8013, http://44.223.23.145:8010, http://44.223.23.145:8012
+2025-06-25 13:36:11 [info] Environment: development
+2025-06-25 13:36:11 [warn] Retry attempt 1: getaddrinfo EAI_AGAIN postgres
+2025-06-25 13:36:12 [warn] Retry attempt 2: getaddrinfo EAI_AGAIN postgres
+2025-06-25 13:36:15 [warn] Retry attempt 3: getaddrinfo EAI_AGAIN postgres
+2025-06-25 13:36:20 [warn] Retry attempt 4: getaddrinfo EAI_AGAIN postgres
+2025-06-25 14:15:14 [info] Environment Configuration:
+2025-06-25 14:15:15 [info] Server running on port 3404
+2025-06-25 14:15:15 [info] Allowed CORS origins: http://44.223.23.145:8012, http://44.223.23.145:8013, http://44.223.23.145:8010, http://44.223.23.145:3404, http://127.0.0.1:5500, http://127.0.0.1:5502, http://44.223.23.145:8012, http://44.223.23.145:8013, http://44.223.23.145:8010, http://44.223.23.145:8012
+2025-06-25 14:15:15 [info] Environment: development
+2025-06-25 14:15:15 [warn] Retry attempt 1: getaddrinfo EAI_AGAIN postgres
+2025-06-25 14:15:16 [warn] Retry attempt 2: getaddrinfo EAI_AGAIN postgres
+2025-06-25 14:15:18 [warn] Retry attempt 3: getaddrinfo EAI_AGAIN postgres
+2025-06-25 14:20:12 [info] Environment Configuration:
+2025-06-25 14:20:12 [info] Server running on port 3404
+2025-06-25 14:20:12 [info] Allowed CORS origins: http://44.223.23.145:8012, http://44.223.23.145:8013, http://44.223.23.145:8010, http://44.223.23.145:3404, http://127.0.0.1:5500, http://127.0.0.1:5502, http://44.223.23.145:8012, http://44.223.23.145:8013, http://44.223.23.145:8010, http://44.223.23.145:8012
+2025-06-25 14:20:12 [info] Environment: development
+2025-06-25 14:20:12 [warn] Retry attempt 1: getaddrinfo EAI_AGAIN postgres
+2025-06-25 14:20:14 [warn] Retry attempt 2: getaddrinfo EAI_AGAIN postgres
+2025-06-25 14:20:18 [warn] Retry attempt 3: getaddrinfo EAI_AGAIN postgres

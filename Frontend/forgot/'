@@ -3,10 +3,10 @@ server {
     server_name 44.223.23.145;
 
     location /login/ {
-        proxy_pass http://login-ajay:80/;
+        proxy_pass http://login32:80/;
     }
 
     location /api/ {
-        proxy_pass http://backend-ajay:3404/;
+        proxy_pass http://backend32:3404/;
     }
 }

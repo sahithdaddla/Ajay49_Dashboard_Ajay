@@ -12,7 +12,7 @@ const cookieParser = require('cookie-parser');
 const winston = require('winston');
 const { combine, timestamp, printf, colorize } = winston.format;
 
-// Load environment variables with explicit path for Docker
+// Load environment variables
 if (fs.existsSync(path.join(__dirname, 'server.env'))) {
   dotenv.config({ path: path.join(__dirname, 'server.env') });
 } else {
@@ -86,35 +86,33 @@ const allowedOrigins = [
   'http://44.223.23.145:3404',
   'http://127.0.0.1:5500',
   'http://127.0.0.1:5502',
-  'http://localhost:8012',
-  'http://localhost:8013',
-  'http://localhost:8010',
-  process.env.FRONTEND_URL || 'http://44.223.23.145:3404',
+  'http://44.223.23.145:8012',
+  'http://44.223.23.145:8013',
+  'http://44.223.23.145:8010',
+  process.env.FRONTEND_URL || 'http://44.223.23.145:8012',
 ];
 
 // Enhanced CORS setup
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || 
-        origin.includes('localhost') || 
-        origin.includes('127.0.0.1')) {
+  origin: (origin, callback) => {
+    logger.debug(`CORS request from: ${origin}`);
+    if (!origin || allowedOrigins.includes(origin) || origin === 'null') {
       callback(null, true);
     } else {
       logger.warn(`CORS blocked: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`CORS policy: Origin ${origin} not allowed`));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Middleware
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 
 // Serve uploads with proper CORS headers
 app.use('/uploads', (req, res, next) => {
@@ -122,6 +120,8 @@ app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Credentials', 'true');
   next();
 }, express.static(path.join(__dirname, 'Uploads')));
+
+
 
 // Serve frontend static files
 const frontendPath = path.join(__dirname, '../frontend');
@@ -148,9 +148,7 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     logger.info(`${method} ${originalUrl} ${res.statusCode} ${duration}ms - ${ip}`);
     
-    if (originalUrl.includes('/auth') || originalUrl.includes('/login') || 
-        originalUrl.includes('/logout') || originalUrl.includes('/signup') || 
-        originalUrl.includes('/forgot')) {
+    if (originalUrl.includes('/auth') || originalUrl.includes('/login') || originalUrl.includes('/logout') || originalUrl.includes('/signup') || originalUrl.includes('/forgot')) {
       logger.debug(`Auth Request: ${method} ${originalUrl}`, {
         headers: req.headers,
         body: method === 'POST' ? req.body : null
@@ -162,27 +160,23 @@ app.use((req, res, next) => {
 });
 
 // Database Configuration
-const poolConfig = {
+const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'postgres-ajay',
+  host: process.env.DB_HOST || 'postgres',
   database: process.env.DB_NAME || 'new_employee_db',
   password: process.env.DB_PASSWORD || 'admin123',
   port: process.env.DB_PORT || 5432,
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
   max: 20
-};
-
-const pool = new Pool(poolConfig);
+});
 
 pool.on('connect', (client) => {
   logger.debug('Database client connected');
-  client.query('SET statement_timeout = 30000');
 });
 
 pool.on('error', (err) => {
-  logger.error('Unexpected error on idle client', err);
-  process.exit(-1);
+  logger.error('Database pool error:', err);
 });
 
 // JWT Configuration
@@ -239,53 +233,37 @@ async function initializeDatabase() {
   try {
     await client.query('BEGIN');
     
-    const tables = await client.query(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public'
-    `);
-    
-    const tableNames = tables.rows.map(row => row.table_name);
-    
-    if (!tableNames.includes('users')) {
-      await client.query(`
-        CREATE TABLE users (
-          id SERIAL PRIMARY KEY,
-          username VARCHAR(50) UNIQUE NOT NULL,
-          email VARCHAR(100) UNIQUE NOT NULL,
-          password TEXT NOT NULL,
-          profile_image TEXT,
-          is_verified BOOLEAN DEFAULT FALSE,
-          reset_token TEXT,
-          reset_token_expiry TIMESTAMP,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-    }
-    
-    if (!tableNames.includes('sessions')) {
-      await client.query(`
-        CREATE TABLE sessions (
-          id SERIAL PRIMARY KEY,
-          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-          token TEXT NOT NULL,
-          ip_address TEXT,
-          user_agent TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          expires_at TIMESTAMP NOT NULL
-        )
-      `);
-    }
-    
     await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        profile_image TEXT,
+        is_verified BOOLEAN DEFAULT FALSE,
+        reset_token TEXT,
+        reset_token_expiry TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE TABLE IF NOT EXISTS sessions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        token TEXT NOT NULL,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP NOT NULL
+      );
+      
       CREATE INDEX IF NOT EXISTS idx_email ON users(email);
       CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
       CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
     `);
     
     await client.query('COMMIT');
-    logger.info('Database schema verified/initialized successfully');
+    logger.info('Database schema initialized successfully');
   } catch (err) {
     await client.query('ROLLBACK');
     logger.error('Database initialization failed:', err);
@@ -295,7 +273,7 @@ async function initializeDatabase() {
   }
 }
 
-// Database Connection with Retry
+// Database Connection
 async function connectWithRetry() {
   return retry(
     async () => {
@@ -330,50 +308,28 @@ connectWithRetry().catch(err => {
 });
 
 // API Endpoints
-
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Astrolite Tech Solutions API',
-    version: '1.0.0',
-    endpoints: {
-      health: '/api/health',
-      signup: '/api/signup',
-      login: '/api/login',
-      profile: '/api/profile'
-    }
-  });
-});
-
-// Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
-    const dbCheck = await pool.query('SELECT version()');
+    const dbCheck = await pool.query('SELECT 1');
     const uptime = process.uptime();
     
     res.json({ 
       status: 'healthy',
-      db: {
-        connected: true,
-        version: dbCheck.rows[0].version.split(' ')[1]
-      },
+      db: dbCheck ? 'connected' : 'disconnected',
       uptime: `${Math.floor(uptime / 60)} minutes`,
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      memory: process.memoryUsage()
+      environment: process.env.NODE_ENV || 'development'
     });
   } catch (err) {
     logger.error('Health check failed:', err);
     res.status(503).json({ 
-      status: 'unhealthy',
+      status: 'unhealthy', 
       error: err.message,
-      db: { connected: false },
       timestamp: new Date().toISOString()
     });
   }
 });
 
-// Signup endpoint
 app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
   const { username, email, password } = req.body;
   
@@ -425,8 +381,7 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
     
     res.status(201).json({ 
       message: 'User created successfully.',
-      user: result.rows[0],
-      verificationToken
+      user: result.rows[0]
     });
   } catch (err) {
     logger.error('Signup error:', err);
@@ -439,7 +394,6 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
   }
 });
 
-// Login endpoint
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   
@@ -486,18 +440,18 @@ app.post('/api/login', async (req, res) => {
 
     logger.debug(`User ${email} logged in successfully`);
 
-    res.cookie('token', accessToken, {
+    res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 58 * 60 * 1000 // 58 minutes
+      maxAge: 15 * 60 * 1000
     });
     
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     const { password: _, ...userData } = user;
@@ -514,7 +468,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Forgot password endpoint
 app.post('/api/forgot', async (req, res) => {
   const { email, newPassword, confirmNewPassword } = req.body;
   
@@ -556,7 +509,6 @@ app.post('/api/forgot', async (req, res) => {
   }
 });
 
-// Email check endpoint
 app.post('/check-email-data', async (req, res) => {
   const { email } = req.body;
   
@@ -574,7 +526,6 @@ app.post('/check-email-data', async (req, res) => {
   }
 });
 
-// Profile endpoint
 app.get('/api/profile', verifyToken, async (req, res) => {
   try {
     const { userId } = req.user;
@@ -608,13 +559,12 @@ app.get('/api/profile', verifyToken, async (req, res) => {
   }
 });
 
-// Logout endpoint
 app.post('/api/logout', verifyToken, async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     await pool.query('DELETE FROM sessions WHERE token = $1', [refreshToken]);
 
-    res.clearCookie('token');
+    res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
 
     logger.debug('User logged out successfully');
@@ -625,58 +575,28 @@ app.post('/api/logout', verifyToken, async (req, res) => {
   }
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
-  
-  logger.error('Error:', {
-    statusCode,
-    message,
+  logger.error('Server error:', {
+    message: err.message,
+    stack: err.stack,
     path: req.path,
-    method: req.method,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    method: req.method
   });
-
-  res.status(statusCode).json({
-    error: {
-      message,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    }
-  });
+  
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: 'File upload error: ' + err.message });
+  }
+  
+  res.status(500).json({ error: 'Internal server error' });
 });
 
-// Server startup
 const PORT = process.env.PORT || 3404;
-const server = app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running on port ${PORT}`);
   logger.info(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`Database host: ${poolConfig.host}`);
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    pool.end(() => {
-      logger.info('Database pool closed');
-      process.exit(0);
-    });
-  });
-});
-
-process.on('SIGINT', () => {
-  logger.info('SIGINT received. Shutting down gracefully...');
-  server.close(() => {
-    pool.end(() => {
-      logger.info('Database pool closed');
-      process.exit(0);
-    });
-  });
-});
-
-// Log rotation
 function rotateLogs() {
   const files = fs.readdirSync(logDir);
   const dateStr = new Date().toISOString().split('T')[0];

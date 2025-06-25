@@ -795,7 +795,7 @@
                 errorElement.textContent = 'Checking email availability...';
                 errorElement.style.color = '#0077ff';
                 
-                const response = await fetch('http://44.223.23.1455:3404/check-email-data', {
+                const response = await fetch('http://44.223.23.145:3404/check-email-data', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    container_name: postgres33
+    container_name: postgres-ajay
     image: postgres:13
     environment:
       POSTGRES_USER: postgres
@@ -14,55 +14,71 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
-    container_name: backend33
+    container_name: backend-ajay
     build:
       context: ./Backend
       dockerfile: Dockerfile
     ports:
       - "3404:3404"
-    environment:
-      DB_USER: postgres
-      DB_HOST: postgres
-      DB_NAME: new_employee_db
-      DB_PASSWORD: admin123
-      DB_PORT: 5432
-      PORT: 3404
-      NODE_ENV: production
-      FRONTEND_URL: http://44.223.23.145:8012
-      JWT_SECRET: Abderoiouwi@12342
+    env_file:
+      - ./Backend/server.env
     depends_on:
       - postgres
     restart: unless-stopped
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3404/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   login:
-    container_name: login33
+    container_name: login-ajay
     build:
       context: ./Frontend/login
       dockerfile: Dockerfile
     ports:
       - "8012:80"
     restart: unless-stopped
+    networks:
+      - app_network
 
   signup:
-    container_name: signup33
+    container_name: signup-ajay
     build:
       context: ./Frontend/signup
       dockerfile: Dockerfile
     ports:
       - "8013:80"
     restart: unless-stopped
+    networks:
+      - app_network
 
   forgot:
-    container_name: forgot33
+    container_name: forgot-ajay
     build:
       context: ./Frontend/forgot
       dockerfile: Dockerfile
     ports:
       - "8010:80"
     restart: unless-stopped
+    networks:
+      - app_network
 
-  
 volumes:
   postgres_data:
+
+networks:
+  app_network:
+    driver: bridge
+
