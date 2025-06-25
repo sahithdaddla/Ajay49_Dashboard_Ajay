@@ -63,14 +63,6 @@ services:
       - "8010:80"
     restart: unless-stopped
 
-  dashboard:
-    container_name: dashboard33
-    build:
-      context: ./Frontend/dashboard
-      dockerfile: Dockerfile
-    ports:
-      - "8011:80"
-    restart: unless-stopped
-
+  
 volumes:
   postgres_data:
