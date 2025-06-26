@@ -40,6 +40,7 @@
       overflow: hidden;
       background-color: var(--gray-100);
       color: var(--dark-color);
+      transition: background-color 0.3s ease;
     }
 
     .header {
@@ -126,6 +127,7 @@
 
     .header-icon:hover {
       color: var(--primary-color);
+      background-color: var(--gray-100);
     }
 
     .user-profile {
@@ -213,7 +215,7 @@
     }
 
     .nav-item.active {
-      box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.2), 0 2px 4px -1px rgba(255, 255, 255, 0.1);
+      background-color: var(--primary-light);
     }
 
     .nav-item.active img {
@@ -228,7 +230,7 @@
     .nav-item.active::after {
       content: '';
       position: absolute;
- Aeros: 0;
+      left: 0;
       top: 50%;
       transform: translateY(-50%);
       width: 4px;
@@ -282,6 +284,7 @@
       border-radius: 16px 0 0 0;
       box-shadow: var(--shadow-sm);
       transition: var(--transition);
+      position: relative;
     }
 
     .content-area iframe {
@@ -289,40 +292,41 @@
       height: 100%;
       border: none;
       background-color: var(--light-color);
+      transition: opacity 0.3s ease;
     }
 
     /* Dark mode styles */
     body.dark-mode {
-      background-color: #000000;
+      background-color: #0f172a;
       color: #f8fafc;
     }
 
     body.dark-mode .header,
     body.dark-mode .sidebar {
-      background-color: #000000;
+      background-color: #0f172a;
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
     }
 
     body.dark-mode .content-area {
-      background-color: #ffffff;
+      background-color: #1e293b;
     }
 
     body.dark-mode .logo-container {
-      background-color: #ffffff;
+      background-color: transparent;
     }
 
     body.dark-mode .search-bar {
-      background-color: #ffffff;
+      background-color: #334155;
       border-color: #475569;
       box-shadow: 0 0 0 2px var(--primary-light), var(--shadow-md);
     }
 
     body.dark-mode .search-bar input {
-      color: #1e293b;
+      color: #f8fafc;
     }
 
     body.dark-mode .search-bar input::placeholder {
-      color: #64748b;
+      color: #94a3b8;
     }
 
     body.dark-mode .header-icon {
@@ -330,12 +334,12 @@
     }
 
     body.dark-mode .header-icon:hover {
-      background-color: #333333;
+      background-color: #334155;
       color: var(--primary-color);
     }
 
     body.dark-mode .user-profile:hover {
-      background-color: #333333;
+      background-color: #334155;
     }
 
     body.dark-mode .user-avatar {
@@ -348,7 +352,7 @@
     }
 
     body.dark-mode .nav-item.active {
-      background-color: #333333;
+      background-color: #334155;
     }
 
     body.dark-mode .logout-item:hover {
@@ -393,7 +397,7 @@
       gap: 12px;
       box-shadow: var(--shadow-xl);
       z-index: 1000;
-      animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+      animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                  slideOutRight 0.5s cubic-bezier(0.5, 0, 0.75, 0) 2.5s forwards;
       max-width: 350px;
       backdrop-filter: blur(10px);
@@ -416,12 +420,32 @@
       background: rgba(245, 158, 11, 0.9);
     }
 
+    /* Loading spinner */
+    .iframe-loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--primary-light);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      z-index: 10;
+    }
+
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
     /* Responsive styles */
     @media (max-width: 1024px) {
       :root {
         --sidebar-width: 80px;
       }
-      
+
       .search-bar {
         width: 240px;
       }
@@ -431,12 +455,12 @@
       .header {
         padding: 0 20px;
       }
-      
+
       .search-bar {
         width: 200px;
         margin-left: 0;
       }
-      
+
       .logo {
         height: 36px;
       }
@@ -446,15 +470,15 @@
       .search-bar {
         display: none;
       }
-      
+
       .user-name {
         display: none;
       }
-      
+
       .user-profile {
         padding: 0;
       }
-      
+
       .header-icon {
         padding: 6px;
       }
@@ -515,7 +539,7 @@
       border-radius: 50%;
       bottom: 20px;
       left: 20px;
-     box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
       animation: pulse 2s infinite;
     }
 
@@ -957,7 +981,7 @@
       </div>
 
       <div class="content-area">
-        <iframe id="contentFrame" src="http://44.223.23.145:8037/" loading="lazy"></iframe>
+        <iframe id="contentFrame" src="http://44.223.23.145:8020/" loading="lazy"></iframe>
       </div>
     </div>
   </div>
@@ -1111,7 +1135,7 @@
             setTimeout(() => {
               elements.avatarSkeleton.style.display = 'none';
               elements.userAvatar.style.display = 'block';
-              elements.userAvatar.src = state.user.profile_image || 
+              elements.userAvatar.src = state.user.profile_image ||
                 'https://img.icons8.com/fluency/48/user-male-circle.png';
               elements.userName.textContent = state.user.username || 'User';
               elements.userName.style.opacity = 0;
@@ -1137,9 +1161,14 @@
           const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           const savedTheme = localStorage.getItem('theme');
           state.isDarkMode = savedTheme === 'dark' || (!savedTheme && prefersDark);
+          
+          // Apply theme immediately
           if (state.isDarkMode) {
             document.body.classList.add('dark-mode');
             elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+          } else {
+            document.body.classList.remove('dark-mode');
+            elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
           }
 
           elements.themeToggle.addEventListener('click', () => {
@@ -1153,23 +1182,48 @@
         },
 
         initNavigation: () => {
+          // Set default iframe source
+          elements.contentFrame.src = config.modules.attendance;
+          
           elements.navItems.forEach(item => {
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+              e.preventDefault();
+              
+              // Remove active class from all items
               elements.navItems.forEach(i => i.classList.remove('active'));
+              
+              // Add active class to clicked item
               item.classList.add('active');
+              
               const module = item.getAttribute('data-module');
-              if (config.modules[module]) {
+              const moduleUrl = config.modules[module];
+              
+              if (moduleUrl) {
+                // Show loading state
                 elements.contentFrame.style.opacity = '0.5';
                 elements.contentFrame.style.transition = 'opacity 0.3s ease';
-                setTimeout(() => {
-                  elements.contentFrame.src = config.modules[module];
-                  elements.contentFrame.onload = () => {
-                    elements.contentFrame.style.opacity = '1';
-                  };
-                }, 200);
+                
+                // Load new content
+                elements.contentFrame.src = moduleUrl;
+                
+                // Handle load completion
+                elements.contentFrame.onload = () => {
+                  elements.contentFrame.style.opacity = '1';
+                };
+                
+                // Handle errors
+                elements.contentFrame.onerror = () => {
+                  utils.showAlert('error', `Failed to load ${module} module`);
+                  elements.contentFrame.style.opacity = '1';
+                };
               }
             });
           });
+          
+          // Set first nav item as active by default
+          if (elements.navItems.length > 0) {
+            elements.navItems[0].classList.add('active');
+          }
         },
 
         initSessionChecker: () => {
