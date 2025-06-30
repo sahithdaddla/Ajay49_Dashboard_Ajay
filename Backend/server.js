@@ -82,12 +82,14 @@ logger.info('Environment Configuration:', {
 const allowedOrigins = [
   'http://44.223.23.145:8012',
   'http://44.223.23.145:8013',
+  'http://44.223.23.145:8057',
   'http://44.223.23.145:8010',
   'http://44.223.23.145:3404',
   'http://127.0.0.1:5500',
   'http://127.0.0.1:5502',
   'http://localhost:8012',
   'http://localhost:8013',
+  'http://localhost:8057',
   'http://localhost:8010',
   process.env.FRONTEND_URL || 'http://44.223.23.145:3404',
 ];
