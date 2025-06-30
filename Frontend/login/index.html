@@ -6,6 +6,7 @@
   <title>HRMS Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
       --primary-color: #6366f1;
@@ -18,7 +19,6 @@
       --gray-300: #cbd5e1;
       --gray-700: #334155;
       --header-height: 70px;
-      --sidebar-width: 90px;
       --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -42,12 +42,13 @@
       color: var(--dark-color);
     }
 
+    /* Header Styles */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       height: var(--header-height);
-      padding: 0 20px;
+      padding: 0 40px;
       background-color: var(--light-color);
       box-shadow: var(--shadow-sm);
       position: fixed;
@@ -59,13 +60,17 @@
     }
 
     .logo-container {
-      padding: 10px;
-      border-radius: 8px;
+      padding: 4px;
+      border-radius: 4px;
       transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .logo {
-      height: 40px;
+      height: 70px;
       transition: var(--transition);
     }
 
@@ -78,21 +83,28 @@
     .search-bar {
       display: flex;
       align-items: center;
-      padding: 10px 16px;
-      background-color: var(--light-color);
-      border-radius: 20px;
-      width: 280px;
-      border: 1px solid black;
-      box-shadow: 0 0 0 2px var(--primary-light), var(--shadow-md);
-      transition: var(--transition);
+      padding: 8px 7px;
+      background-color: rgb(255, 255, 255);
+      border-radius: 15px;
+      width: 225px;
+      margin-left: 50px;
+      border: 0.5px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .search-bar:hover {
+      transform: translateY(-2px);
+      background-color: white;
+      border: 0.5px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     }
 
     .search-bar input {
       border: none;
       outline: none;
-      padding: 4px;
+      padding: 3px;
       background-color: transparent;
-      width: 100%;
+      width: 90%;
       font-size: 0.9rem;
       color: black;
     }
@@ -122,10 +134,14 @@
       transition: var(--transition);
       padding: 8px;
       border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .header-icon:hover {
       color: var(--primary-color);
+      background-color: var(--gray-100);
     }
 
     .user-profile {
@@ -144,7 +160,7 @@
 
     .user-name {
       font-weight: 500;
-      font-size: 0.95rem;
+      font-size: 1.15rem;
     }
 
     .user-avatar {
@@ -160,176 +176,264 @@
       border-color: var(--primary-color);
     }
 
-    .main-layout {
-      display: flex;
-      flex: 1;
-      margin-top: var(--header-height);
-      height: calc(100vh - var(--header-height));
+    .toggle-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--gray-700);
+      padding: 8px;
+      border-radius: 8px;
       transition: var(--transition);
+      line-height: 1;
     }
 
-    .sidebar {
-      width: var(--sidebar-width);
-      background-color: var(--light-color);
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    .toggle-btn:hover {
+      color: var(--primary-color);
+      background-color: var(--gray-100);
+    }
+
+    .toggle-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Radial Menu Styles */
+    .radial-menu {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0) rotate(0deg);
+      width: 80px;
+      height: 80px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
-      padding: 20px 0;
-      overflow-y: auto;
-      scrollbar-width: none;
-      z-index: 90;
-      transition: var(--transition);
+      transition: transform 1s ease, width 0.3s ease, height 0.3s ease;
+      z-index: 2000;
+      box-shadow: var(--shadow-lg);
     }
 
-    .sidebar::-webkit-scrollbar {
+    .radial-menu.active {
+      transform: translate(-50%, -50%) scale(1) rotate(360deg);
+      width: 340px;
+      height: 340px;
+    }
+
+    .radial-menu.closing {
+      transform: translate(-50%, -50%) scale(0) rotate(720deg);
+    }
+
+    .inner-circle {
+      width: 140px;
+      height: 140px;
+      background-color: var(--light-color);
+      border-radius: 50%;
+      position: absolute;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: var(--transition);
+      z-index: 2100;
+    }
+
+    .inner-circle select {
+      width: 100px;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      color: var(--primary-color);
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: var(--transition);
+      text-align: center;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .inner-circle select:hover {
+      color: var(--accent-color);
+    }
+
+    .inner-circle select option {
+      background-color: var(--light-color);
+      color: var(--dark-color);
+    }
+
+    .emp-menu, .hr-menu {
+      position: absolute;
+      width: 100%;
+      height: 100%;
       display: none;
     }
 
-    .nav-item {
-      width: 56px;
-      height: 56px;
-      margin: 8px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border-radius: 12px;
-      text-align: center;
-      position: relative;
+    .emp-menu.active, .hr-menu.active {
+      display: block;
     }
 
-    .nav-item img {
-      width: 22px;
-      height: 22px;
-    }
-
-    .nav-item span {
-      font-size: 0.65rem;
-      margin-top: 6px;
-      font-weight: 500;
-      color: var(--gray-700);
-    }
-
-    .nav-item.active {
-      box-shadow: 0 4px 6px -1px rgba(255, 255, 255, 0.2), 0 2px 4px -1px rgba(255, 255, 255, 0.1);
-    }
-
-    .nav-item.active img {
-      filter: brightness(0) saturate(100%) invert(39%) sepia(98%) saturate(747%) hue-rotate(209deg) brightness(93%) contrast(96%);
-    }
-
-    .nav-item.active span {
-      color: var(--primary-color);
-      font-weight: 600;
-    }
-
-    .nav-item.active::after {
-      content: '';
+    .menu-item {
       position: absolute;
- Aeros: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 4px;
-      height: 24px;
-      background-color: var(--primary-color);
-      border-radius: 0 4px 4px 0;
-    }
-
-    .logout-item {
-      width: 56px;
-      height: 56px;
-      margin: 8px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border-radius: 12px;
-      text-align: center;
-      margin-top: auto;
-    }
-
-    .logout-item i {
-      font-size: 22px;
-      color: var(--gray-700);
-    }
-
-    .logout-item span {
-      font-size: 0.65rem;
-      margin-top: 6px;
-      font-weight: 500;
-      color: var(--gray-700);
-    }
-
-    .logout-item:hover {
-      background-color: #fee2e2;
-    }
-
-    .logout-item:hover i {
-      color: #dc3545;
-    }
-
-    .logout-item:hover span {
-      color: #dc3545;
-    }
-
-    .content-area {
-      flex: 1;
+      width: 40px;
+      height: 40px;
       background-color: var(--light-color);
-      overflow-y: auto;
-      border-radius: 16px 0 0 0;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
       box-shadow: var(--shadow-sm);
-      transition: var(--transition);
     }
 
-    .content-area iframe {
+    .menu-item:hover {
+      background-color: var(--gray-100);
+    }
+
+    .menu-item img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    /* Tooltip Styles */
+    .tooltip {
+      position: absolute;
+      background-color: var(--dark-color);
+      color: var(--light-color);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 2100;
+      transform: translate(-50%, -50%);
+    }
+
+    .menu-item:hover .tooltip {
+      opacity: 1;
+    }
+
+    /* Tooltip positions for EMP modules */
+    .emp-menu .menu-item[data-module="emp_attendance"] .tooltip { transform: translate(-50%, -100%); }
+    .emp-menu .menu-item[data-module="emp_leave"] .tooltip { transform: translate(-40%, -90%); }
+    .emp-menu .menu-item[data-module="emp_wfh"] .tooltip { transform: translate(-30%, -70%); }
+    .emp-menu .menu-item[data-module="emp_payslip"] .tooltip { transform: translate(-20%, -50%); }
+    .emp-menu .menu-item[data-module="emp_tasks"] .tooltip { transform: translate(-10%, -30%); }
+    .emp-menu .menu-item[data-module="emp_helpdesk"] .tooltip { transform: translate(0%, -20%); }
+    .emp-menu .menu-item[data-module="emp_Onboarding"] .tooltip { transform: translate(10%, -10%); }
+    .emp-menu .menu-item[data-module="emp_benefits"] .tooltip { transform: translate(20%, 0%); }
+    .emp-menu .menu-item[data-module="emp_Appraisal"] .tooltip { transform: translate(30%, 10%); }
+    .emp-menu .menu-item[data-module="emp_notifications"] .tooltip { transform: translate(40%, 20%); }
+    .emp-menu .menu-item[data-module="emp_asset"] .tooltip { transform: translate(50%, 30%); }
+    .emp-menu .menu-item[data-module="emp_bonus"] .tooltip { transform: translate(50%, 40%); }
+    .emp-menu .menu-item[data-module="emp_joblists"] .tooltip { transform: translate(40%, 50%); }
+    .emp-menu .menu-item[data-module="emp_claim"] .tooltip { transform: translate(30%, 60%); }
+    .emp-menu .menu-item[data-module="emp_offboarding"] .tooltip { transform: translate(20%, 70%); }
+    .emp-menu .menu-item[data-module="emp_jobapplication"] .tooltip { transform: translate(10%, 80%); }
+    .emp-menu .menu-item[data-module="emp_offerletter"] .tooltip { transform: translate(0%, 90%); }
+    .emp-menu .menu-item[data-module="emp_logout"] .tooltip { transform: translate(-10%, 100%); }
+
+    /* Tooltip positions for HR modules */
+    .hr-menu .menu-item[data-module="hr_attendance"] .tooltip { transform: translate(-50%, -100%); }
+    .hr-menu .menu-item[data-module="hr_leave"] .tooltip { transform: translate(-40%, -90%); }
+    .hr-menu .menu-item[data-module="hr_wfh"] .tooltip { transform: translate(-30%, -70%); }
+    .hr-menu .menu-item[data-module="hr_payslip"] .tooltip { transform: translate(-20%, -50%); }
+    .hr-menu .menu-item[data-module="hr_tasks"] .tooltip { transform: translate(-10%, -30%); }
+    .hr-menu .menu-item[data-module="hr_helpdesk"] .tooltip { transform: translate(0%, -20%); }
+    .hr-menu .menu-item[data-module="hr_employeemanagement"] .tooltip { transform: translate(10%, -10%); }
+    .hr-menu .menu-item[data-module="hr_benefits"] .tooltip { transform: translate(20%, 0%); }
+    .hr-menu .menu-item[data-module="hr_appraisal"] .tooltip { transform: translate(30%, 10%); }
+    .hr-menu .menu-item[data-module="hr_notifications"] .tooltip { transform: translate(40%, 20%); }
+    .hr-menu .menu-item[data-module="hr_asset"] .tooltip { transform: translate(50%, 30%); }
+    .hr-menu .menu-item[data-module="hr_bonus"] .tooltip { transform: translate(50%, 40%); }
+    .hr-menu .menu-item[data-module="hr_joblists"] .tooltip { transform: translate(40%, 50%); }
+    .hr-menu .menu-item[data-module="hr_claim"] .tooltip { transform: translate(30%, 60%); }
+    .hr-menu .menu-item[data-module="hr_offboarding"] .tooltip { transform: translate(20%, 70%); }
+    .hr-menu .menu-item[data-module="hr_jobapplication"] .tooltip { transform: translate(10%, 80%); }
+    .hr-menu .menu-item[data-module="hr_Onboarding"] .tooltip { transform: translate(0%, 90%); }
+    .hr-menu .menu-item[data-module="hr_logout"] .tooltip { transform: translate(-10%, 100%); }
+
+    /* Main Content */
+    .main-content {
+      margin-top: var(--header-height);
+      height: calc(100vh - var(--header-height));
+      width: 100%;
+      transition: filter 0.3s ease;
+    }
+
+    .main-content iframe {
       width: 100%;
       height: 100%;
       border: none;
       background-color: var(--light-color);
     }
 
-    /* Dark mode styles */
+    /* Blur Effect */
+    .menu-open .main-content {
+      filter: blur(25px);
+    }
+
+    /* Dark Mode Styles */
     body.dark-mode {
       background-color: #000000;
       color: #f8fafc;
     }
 
-    body.dark-mode .header,
-    body.dark-mode .sidebar {
+    body.dark-mode .header {
       background-color: #000000;
       box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
     }
 
-    body.dark-mode .content-area {
-      background-color: #ffffff;
-    }
-
     body.dark-mode .logo-container {
       background-color: #ffffff;
+      padding: 0px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
-    body.dark-mode .search-bar {
-      background-color: #ffffff;
-      border-color: #475569;
-      box-shadow: 0 0 0 2px var(--primary-light), var(--shadow-md);
+    .dark-mode .search-bar {
+      background-color: #000000b0;
+      border-radius: 20px;
+      box-shadow: 0 2px 4px rgba(197, 190, 255, 0.865);
     }
 
-    body.dark-mode .search-bar input {
-      color: #1e293b;
+    .dark-mode .search-bar:hover {
+      background-color: black;
+      border-radius: 20px;
+      color: white;
+      box-shadow: 0 2px 4px rgba(197, 190, 255, 0.865);
     }
 
-    body.dark-mode .search-bar input::placeholder {
-      color: #64748b;
+    .dark-mode .search-bar input {
+      color: #ffffff;
     }
 
-    body.dark-mode .header-icon {
-      color: #94a3b8;
+    .dark-mode .search-bar input::placeholder {
+      color: #a0a0a0;
     }
 
-    body.dark-mode .header-icon:hover {
+    .dark-mode .search-bar button {
+      color: #ffffff;
+    }
+
+    body.dark-mode .header-icon,
+    body.dark-mode .toggle-btn {
+      color: #ffffff;
+    }
+
+    body.dark-mode .header-icon:hover,
+    body.dark-mode .toggle-btn:hover {
       background-color: #333333;
       color: var(--primary-color);
     }
@@ -342,44 +446,34 @@
       border-color: #475569;
     }
 
-    body.dark-mode .nav-item span,
-    body.dark-mode .logout-item span {
-      color: #94a3b8;
+    body.dark-mode .inner-circle {
+      background-color: #570057;
+      color: white;
     }
 
-    body.dark-mode .nav-item.active {
-      background-color: #333333;
+    body.dark-mode .inner-circle select {
+      background: transparent;
+      color: #ffffff;
     }
 
-    body.dark-mode .logout-item:hover {
-      background-color: #4b1c1c;
+    body.dark-mode .inner-circle select:hover {
+      color: var(--accent-color);
     }
 
-    body.dark-mode .logout-item:hover i {
-      color: #f87171;
+    body.dark-mode .inner-circle select option {
+      background-color: #444444;
+      color: #ffffff;
     }
 
-    body.dark-mode .logout-item:hover span {
-      color: #f87171;
+    body.dark-mode .menu-item {
+      background-color: #ffffff;
     }
 
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    body.dark-mode .menu-item:hover {
+      background-color: #f8fcff;
     }
 
-    @keyframes slideInRight {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    @keyframes slideOutRight {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-
-    /* Alert styles */
+    /* Alert Styles */
     .alert {
       position: fixed;
       top: 20px;
@@ -416,51 +510,18 @@
       background: rgba(245, 158, 11, 0.9);
     }
 
-    /* Responsive styles */
-    @media (max-width: 1024px) {
-      :root {
-        --sidebar-width: 80px;
-      }
-      
-      .search-bar {
-        width: 240px;
-      }
+    /* Animations */
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
 
-    @media (max-width: 768px) {
-      .header {
-        padding: 0 20px;
-      }
-      
-      .search-bar {
-        width: 200px;
-        margin-left: 0;
-      }
-      
-      .logo {
-        height: 36px;
-      }
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
     }
 
-    @media (max-width: 640px) {
-      .search-bar {
-        display: none;
-      }
-      
-      .user-name {
-        display: none;
-      }
-      
-      .user-profile {
-        padding: 0;
-      }
-      
-      .header-icon {
-        padding: 6px;
-      }
-    }
-
-    /* Loading animation */
+    /* Loading Animation */
     .skeleton {
       background-color: var(--gray-200);
       border-radius: 6px;
@@ -484,7 +545,6 @@
       height: 100vh;
       margin: 0;
       overflow: hidden;
-      font-family: Arial, sans-serif;
       background-color: #f0f2f5;
     }
 
@@ -498,8 +558,8 @@
 
     .big-circle {
       position: absolute;
-      width: 1000px;
-      height: 1000px;
+      width: 1200px;
+      height: 1200px;
       background-color: #0077ff;
       border-radius: 50%;
       top: -500px;
@@ -509,13 +569,13 @@
 
     .small-circle {
       position: absolute;
-      width: 100px;
-      height: 100px;
+      width: 140px;
+      height: 140px;
       background-color: #0055cc;
       border-radius: 50%;
       bottom: 20px;
       left: 20px;
-     box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
       animation: pulse 2s infinite;
     }
 
@@ -580,6 +640,11 @@
     @keyframes typing {
       from { width: 0; }
       to { width: 370px; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .login-container {
@@ -698,7 +763,12 @@
       text-decoration: underline;
     }
 
+    /* Responsive Styles */
     @media (max-width: 1024px) {
+      .search-bar {
+        width: 240px;
+      }
+
       .big-circle {
         width: 800px;
         height: 800px;
@@ -730,6 +800,19 @@
     }
 
     @media (max-width: 768px) {
+      .header {
+        padding: 0 20px;
+      }
+
+      .search-bar {
+        width: 200px;
+        margin-left: 0;
+      }
+
+      .logo {
+        height: 36px;
+      }
+
       .big-circle {
         width: 600px;
         height: 600px;
@@ -785,6 +868,31 @@
 
       .login-container h2 {
         font-size: 24px;
+      }
+
+      .inner-circle select {
+        width: 80px;
+        font-size: 16px;
+        padding: 6px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .search-bar {
+        display: none;
+      }
+
+      .user-name {
+        display: none;
+      }
+
+      .user-profile {
+        padding: 0;
+      }
+
+      .header-icon,
+      .toggle-btn {
+        padding: 6px;
       }
     }
 
@@ -852,6 +960,12 @@
       .error-message {
         font-size: 11px;
       }
+
+      .inner-circle select {
+        width: 70px;
+        font-size: 14px;
+        padding: 5px;
+      }
     }
 
     /* Hide/Show Classes */
@@ -898,12 +1012,12 @@
   <div id="dashboardView" class="hidden">
     <header class="header">
       <div class="logo-container">
-        <img src="https://www.astrolitetech.com/assets/uploads/logo.png" alt="Company Logo" class="logo" />
+        <img src="Astolite_Logo.png" alt="Company Logo" class="logo" />
       </div>
       <div class="header-right">
         <div class="search-bar">
-          <input type="text" placeholder="Search employees, reports..."/>
-          <button><i class="fas fa-search"></i></button>
+          <input type="text" id="searchInput" placeholder="Search employees, reports..." />
+          <button id="searchButton"><i class="fas fa-search"></i></button>
         </div>
         <div class="header-icon" id="themeToggle" title="Toggle theme">
           <i class="fas fa-moon"></i>
@@ -913,53 +1027,138 @@
           <img src="https://img.icons8.com/fluency/48/user-male-circle.png" alt="User Avatar" class="user-avatar" id="userAvatar" style="display:none;" />
           <span class="user-name" id="userName">Loading...</span>
         </div>
+        <button class="toggle-btn" id="toggleBtn">
+          <i class="fas fa-bars"></i>
+        </button>
       </div>
     </header>
 
-    <div class="main-layout">
-      <div class="sidebar">
-        <div class="nav-item active" data-module="attendance" title="Attendance">
-          <img src="https://img.icons8.com/color/48/calendar--v1.png" alt="Attendance"/>
-          <span>Attendance</span>
+    <!-- Radial Menu -->
+    <div class="radial-menu" id="radialMenu">
+      <div class="inner-circle" id="innerCircle">
+        <select id="moduleSelector">
+          <option value="emp">EMP</option>
+          <option value="hr">HR</option>
+        </select>
+      </div>
+      <div class="emp-menu" id="empMenu">
+        <div class="menu-item" data-module="emp_attendance">
+          <img src="https://img.icons8.com/color/24/calendar--v1.png" alt="Attendance"><span class="tooltip">Attendance</span>
         </div>
-        <div class="nav-item" data-module="leave" title="Leave Management">
-          <img src="https://img.icons8.com/color/48/beach.png" alt="Leave"/>
-          <span>Leave</span>
+        <div class="menu-item" data-module="emp_leave">
+          <img src="https://img.icons8.com/color/24/beach.png" alt="Leave"><span class="tooltip">Leave</span>
         </div>
-        <div class="nav-item" data-module="wfh" title="Work From Home">
-          <img src="https://img.icons8.com/color/48/laptop.png" alt="WFH"/>
-          <span>WFH</span>
+        <div class="menu-item" data-module="emp_wfh">
+          <img src="https://img.icons8.com/color/24/laptop.png" alt="WFH"><span class="tooltip">WFH</span>
         </div>
-        <div class="nav-item" data-module="recruitment" title="Recruitment">
-          <img src="https://img.icons8.com/color/48/resume.png" alt="Recruitment"/>
-          <span>Recruit</span>
+        <div class="menu-item" data-module="emp_payslip">
+          <img src="https://img.icons8.com/color/24/money-bag.png" alt="Payslip"><span class="tooltip">Payslip</span>
         </div>
-        <div class="nav-item" data-module="payslip" title="Payroll">
-          <img src="https://img.icons8.com/color/48/money-bag.png" alt="Payroll"/>
-          <span>Payroll</span>
+        <div class="menu-item" data-module="emp_tasks">
+          <img src="https://img.icons8.com/color/24/task-completed.png" alt="Tasks"><span class="tooltip">Tasks</span>
         </div>
-        <div class="nav-item" data-module="tasks" title="Tasks">
-          <img src="https://img.icons8.com/color/48/task-completed.png" alt="Tasks"/>
-          <span>Tasks</span>
+        <div class="menu-item" data-module="emp_helpdesk">
+          <img src="https://img.icons8.com/color/24/help.png" alt="Help Desk"><span class="tooltip">Help Desk</span>
         </div>
-        <div class="nav-item" data-module="offboarding" title="Offboarding">
-          <img src="https://img.icons8.com/color/48/exit.png" alt="Offboarding"/>
-          <span>Offboard</span>
+        <div class="menu-item" data-module="emp_Onboarding">
+          <img src="https://cdn-icons-png.freepik.com/256/13730/13730909.png?semt=ais_hybrid" alt="Onboarding"><span class="tooltip">Onboarding</span>
         </div>
-        <div class="nav-item" data-module="helpdesk" title="Help Desk">
-          <img src="https://img.icons8.com/color/48/help.png" alt="Help Desk"/>
-          <span>Help Desk</span>
+        <div class="menu-item" data-module="emp_benefits">
+          <img src="https://cdn-icons-png.flaticon.com/512/8655/8655563.png" alt="Benefits"><span class="tooltip">Benefits</span>
         </div>
-        <div class="logout-item" id="logoutBtn" title="Logout">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
+        <div class="menu-item" data-module="emp_Appraisal">
+          <img src="https://cdn-icons-png.flaticon.com/512/12278/12278438.png" alt="Appraisal"><span class="tooltip">Appraisal</span>
+        </div>
+        <div class="menu-item" data-module="emp_notifications">
+          <img src="https://cdn-icons-png.flaticon.com/512/4658/4658755.png" alt="Notifications"><span class="tooltip">Notifications</span>
+        </div>
+        <div class="menu-item" data-module="emp_asset">
+          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135771.png" alt="Assets"><span class="tooltip">Assets</span>
+        </div>
+        <div class="menu-item" data-module="emp_bonus">
+          <img src="https://cdn-icons-png.flaticon.com/512/6303/6303173.png" alt="Bonus"><span class="tooltip">Bonus</span>
+        </div>
+        <div class="menu-item" data-module="emp_joblists">
+          <img src="https://cdn-icons-png.flaticon.com/512/4116/4116684.png" alt="Job Listings"><span class="tooltip">Job Listings</span>
+        </div>
+        <div class="menu-item" data-module="emp_claim">
+          <img src="https://cdn-icons-png.flaticon.com/512/12194/12194787.png" alt="Claims"><span class="tooltip">Claims</span>
+        </div>
+        <div class="menu-item" data-module="emp_offboarding">
+          <img src="https://cdn-icons-png.freepik.com/256/8265/8265009.png?semt=ais_hybrid" alt="Offboarding"><span class="tooltip">Offboarding</span>
+        </div>
+        <div class="menu-item" data-module="emp_jobapplication">
+          <img src="https://cdn-icons-png.flaticon.com/512/13441/13441753.png" alt="Job Application"><span class="tooltip">Job Application</span>
+        </div>
+        <div class="menu-item" data-module="emp_offerletter">
+          <img src="https://cdn-icons-png.freepik.com/256/4654/4654143.png?semt=ais_hybrid" alt="Offer Letter"><span class="tooltip">Offer Letter</span>
+        </div>
+        <div class="menu-item" data-module="emp_logout">
+          <img src="https://img.icons8.com/color/24/logout-rounded-left.png" alt="Logout"><span class="tooltip">Logout</span>
         </div>
       </div>
-
-      <div class="content-area">
-        <iframe id="contentFrame" src="http://44.223.23.145:8037/" loading="lazy"></iframe>
+      <div class="hr-menu" id="hrMenu">
+        <div class="menu-item" data-module="hr_attendance">
+          <img src="https://img.icons8.com/color/24/calendar--v1.png" alt="Attendance"><span class="tooltip">Attendance</span>
+        </div>
+        <div class="menu-item" data-module="hr_leave">
+          <img src="https://img.icons8.com/color/24/beach.png" alt="Leave"><span class="tooltip">Leave</span>
+        </div>
+        <div class="menu-item" data-module="hr_wfh">
+          <img src="https://img.icons8.com/color/24/laptop.png" alt="WFH"><span class="tooltip">WFH</span>
+        </div>
+        <div class="menu-item" data-module="hr_payslip">
+          <img src="https://img.icons8.com/color/24/money-bag.png" alt="Payslip"><span class="tooltip">Payslip</span>
+        </div>
+        <div class="menu-item" data-module="hr_tasks">
+          <img src="https://img.icons8.com/color/24/task-completed.png" alt="Tasks"><span class="tooltip">Tasks</span>
+        </div>
+        <div class="menu-item" data-module="hr_helpdesk">
+          <img src="https://img.icons8.com/color/24/help.png" alt="Help Desk"><span class="tooltip">Help Desk</span>
+        </div>
+        <div class="menu-item" data-module="hr_employeemanagement">
+          <img src="https://img.icons8.com/color/24/conference-call.png" alt="Employee Management"><span class="tooltip">Employee Management</span>
+        </div>
+        <div class="menu-item" data-module="hr_benefits">
+          <img src="https://cdn-icons-png.flaticon.com/512/11113/11113093.png" alt="Benefits"><span class="tooltip">Benefits</span>
+        </div>
+        <div class="menu-item" data-module="hr_appraisal">
+          <img src="https://cdn-icons-png.flaticon.com/512/11112/11112856.png" alt="Appraisal"><span class="tooltip">Appraisal</span>
+        </div>
+        <div class="menu-item" data-module="hr_notifications">
+          <img src="https://img.icons8.com/color/24/appointment-reminders.png" alt="Notifications"><span class="tooltip">Notifications</span>
+        </div>
+        <div class="menu-item" data-module="hr_asset">
+          <img src="https://img.icons8.com/color/24/feedback.png" alt="Assets"><span class="tooltip">Assets</span>
+        </div>
+        <div class="menu-item" data-module="hr_bonus">
+          <img src="https://img.icons8.com/color/24/document.png" alt="Bonus"><span class="tooltip">Bonus</span>
+        </div>
+        <div class="menu-item" data-module="hr_joblists">
+          <img src="https://img.icons8.com/color/24/training.png" alt="Job Listings"><span class="tooltip">Job Listings</span>
+        </div>
+        <div class="menu-item" data-module="hr_claim">
+          <img src="https://cdn-icons-png.freepik.com/256/14252/14252153.png?semt=ais_hybrid" alt="Claims"><span class="tooltip">Claims</span>
+        </div>
+        <div class="menu-item" data-module="hr_offboarding">
+          <img src="https://img.icons8.com/?size=192&id=E1XHpaUoWFxv&format=png" alt="Offboarding"><span class="tooltip">Offboarding</span>
+        </div>
+        <div class="menu-item" data-module="hr_jobapplication">
+          <img src="https://cdn-icons-png.flaticon.com/512/16995/16995294.png" alt="Job Application"><span class="tooltip">Job Application</span>
+        </div>
+        <div class="menu-item" data-module="hr_Onboarding">
+          <img src="https://cdn-icons-png.flaticon.com/512/3862/3862949.png" alt="Onboarding"><span class="tooltip">Onboarding</span>
+        </div>
+        <div class="menu-item" data-module="hr_logout">
+          <img src="https://img.icons8.com/color/24/logout-rounded-left.png" alt="Logout"><span class="tooltip">Logout</span>
+        </div>
       </div>
     </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+      <iframe id="contentFrame" src="http://44.223.23.145:8037/" loading="lazy"></iframe>
+    </main>
   </div>
 
   <script>
@@ -972,14 +1171,42 @@
           forgotPassword: 'http://44.223.23.145:8010'
         },
         modules: {
-          attendance: 'http://3.88.203.125:7100/',
-          leave: 'http://44.223.23.145:8037/',
-          wfh: 'http://54.166.206.245:8026/',
-          recruitment: 'http://3.88.203.125:8024/',
-          payslip: 'http://54.166.206.245:8047/',
-          tasks: 'http://54.166.206.245:8133/',
-          offboarding: 'http://54.166.206.245:8035/',
-          helpdesk: 'http://54.166.206.245:8042/'
+          emp_attendance: 'http://44.223.23.145:8051/',
+          emp_leave: 'http://44.223.23.145:8037/',
+          emp_wfh: 'http://44.223.23.145:8025/',
+          emp_payslip: 'http://44.223.23.145:8008/',
+          emp_tasks: 'http://44.223.23.145:8045/',
+          emp_helpdesk: 'http://44.223.23.145:8049/',
+          emp_Onboarding: 'http://44.223.23.145:8039/',
+          emp_benefits: 'http://44.223.23.145:8043/',
+          emp_Appraisal: 'http://44.223.23.145:8014/',
+          emp_notifications: 'http://44.223.23.145:8053/',
+          emp_asset: 'http://44.223.23.145:8047/',
+          emp_bonus: 'http://44.223.23.145:8055/',
+          emp_joblists: 'http://3.85.61.23:8020/',
+          emp_claim: 'http://44.223.23.145:8027/',
+          emp_offboarding: 'http://44.223.23.145:8041/',
+          emp_jobapplication: 'http://44.223.23.145:8031/',
+          emp_offerletter: 'http://44.223.23.145:8033/',
+          emp_logout: '',
+          hr_attendance: 'http://44.223.23.145:8052/',
+          hr_leave: 'http://44.223.23.145:8038/',
+          hr_wfh: 'http://44.223.23.145:8026/',
+          hr_payslip: 'http://44.223.23.145:8009/',
+          hr_tasks: 'http://44.223.23.145:8046/',
+          hr_helpdesk: 'http://44.223.23.145:8050/',
+          hr_Onboarding: 'http://44.223.23.145:8040/',
+          hr_employeemanagement: 'http://44.223.23.145:8036/',
+          hr_benefits: 'http://44.223.23.145:8044/',
+          hr_appraisal: 'http://44.223.23.145:8015/',
+          hr_notifications: 'http://44.223.23.145:8056/',
+          hr_asset: 'http://44.223.23.145:8048/',
+          hr_bonus: 'http://44.223.23.145:8056/',
+          hr_joblists: 'http://3.85.61.23:8021/',
+          hr_claim: 'http://44.223.23.145:8028/',
+          hr_offboarding: 'http://44.223.23.145:8042/',
+          hr_jobapplication: 'http://44.223.23.145:8032/',
+          hr_logout: ''
         },
         sessionCheckInterval: 300000
       };
@@ -999,16 +1226,24 @@
         userAvatar: document.getElementById('userAvatar'),
         userName: document.getElementById('userName'),
         themeToggle: document.getElementById('themeToggle'),
-        navItems: document.querySelectorAll('.nav-item'),
-        userProfile: document.querySelector('.user-profile'),
-        logoutBtn: document.getElementById('logoutBtn')
+        toggleBtn: document.getElementById('toggleBtn'),
+        radialMenu: document.getElementById('radialMenu'),
+        innerCircle: document.getElementById('innerCircle'),
+        moduleSelector: document.getElementById('moduleSelector'),
+        empMenu: document.getElementById('empMenu'),
+        hrMenu: document.getElementById('hrMenu'),
+        mainContent: document.getElementById('mainContent'),
+        searchInput: document.getElementById('searchInput'),
+        searchButton: document.getElementById('searchButton')
       };
 
       const state = {
         user: null,
         token: null,
         isDarkMode: false,
-        isAuthenticated: false
+        isAuthenticated: false,
+        isToggling: false,
+        currentMenu: 'emp'
       };
 
       const utils = {
@@ -1092,6 +1327,9 @@
           elements.appBody.classList.remove('login-body');
           elements.loginView.classList.add('hidden');
           elements.dashboardView.classList.remove('hidden');
+          core.initTheme();
+          core.initNavigation();
+          core.initSessionChecker();
         },
 
         verifySession: async () => {
@@ -1139,36 +1377,156 @@
           state.isDarkMode = savedTheme === 'dark' || (!savedTheme && prefersDark);
           if (state.isDarkMode) {
             document.body.classList.add('dark-mode');
-            elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            elements.themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+          } else {
+            elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
           }
 
           elements.themeToggle.addEventListener('click', () => {
             state.isDarkMode = !state.isDarkMode;
             document.body.classList.toggle('dark-mode');
             elements.themeToggle.innerHTML = state.isDarkMode
-              ? '<i class="fas fa-sun"></i>'
+              ? '<i class="material-icons">light_mode</i>'
               : '<i class="fas fa-moon"></i>';
             localStorage.setItem('theme', state.isDarkMode ? 'dark' : 'light');
           });
         },
 
         initNavigation: () => {
-          elements.navItems.forEach(item => {
-            item.addEventListener('click', () => {
-              elements.navItems.forEach(i => i.classList.remove('active'));
-              item.classList.add('active');
-              const module = item.getAttribute('data-module');
-              if (config.modules[module]) {
-                elements.contentFrame.style.opacity = '0.5';
-                elements.contentFrame.style.transition = 'opacity 0.3s ease';
-                setTimeout(() => {
-                  elements.contentFrame.src = config.modules[module];
-                  elements.contentFrame.onload = () => {
-                    elements.contentFrame.style.opacity = '1';
-                  };
-                }, 200);
-              }
+          const positionMenuItems = (menu, numItems) => {
+            const radius = 150;
+            const angleStep = 360 / numItems;
+            menu.querySelectorAll('.menu-item').forEach((item, index) => {
+              const angle = index * angleStep - 90;
+              const rad = angle * (Math.PI / 180);
+              const x = radius * Math.cos(rad);
+              const y = radius * Math.sin(rad);
+              item.style.left = `calc(50% + ${x}px - 20px)`;
+              item.style.top = `calc(50% + ${y}px - 20px)`;
             });
+          };
+
+          positionMenuItems(elements.empMenu, elements.empMenu.querySelectorAll('.menu-item').length);
+          positionMenuItems(elements.hrMenu, elements.hrMenu.querySelectorAll('.menu-item').length);
+
+          const showMenu = (menuType) => {
+            console.log(`Showing menu: ${menuType}`);
+            elements.empMenu.classList.remove('active');
+            elements.hrMenu.classList.remove('active');
+            if (menuType === 'emp') {
+              elements.empMenu.classList.add('active');
+            } else if (menuType === 'hr') {
+              elements.hrMenu.classList.add('active');
+            }
+            state.currentMenu = menuType;
+            elements.moduleSelector.value = menuType;
+          };
+
+          elements.moduleSelector.addEventListener('change', (event) => {
+            event.stopPropagation();
+            const module = event.target.value;
+            console.log(`Dropdown selected: ${module}`);
+            showMenu(module);
+          });
+
+          [elements.empMenu, elements.hrMenu].forEach(menu => {
+            menu.querySelectorAll('.menu-item').forEach(item => {
+              item.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const module = item.dataset.module;
+                console.log(`Module clicked: ${module}`);
+                if (module === 'emp_logout' || module === 'hr_logout') {
+                  core.handleLogout();
+                  return;
+                }
+                if (config.modules[module]) {
+                  elements.contentFrame.style.opacity = '0.5';
+                  elements.contentFrame.style.transition = 'opacity 0.3s ease';
+                  setTimeout(() => {
+                    elements.contentFrame.src = config.modules[module];
+                    elements.contentFrame.onload = () => {
+                      elements.contentFrame.style.opacity = '1';
+                    };
+                  }, 200);
+                } else {
+                  console.warn(`No URL found for module: ${module}`);
+                  utils.showAlert('error', `Module ${module} not found`);
+                }
+                elements.radialMenu.classList.add('closing');
+                elements.radialMenu.classList.remove('active');
+                document.body.classList.remove('menu-open');
+                showMenu('emp');
+                setTimeout(() => {
+                  elements.radialMenu.classList.remove('closing');
+                  elements.toggleBtn.disabled = false;
+                  state.isToggling = false;
+                }, 1000);
+              });
+            });
+          });
+
+          elements.toggleBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            if (state.isToggling) return;
+            state.isToggling = true;
+            elements.toggleBtn.disabled = true;
+            elements.radialMenu.classList.toggle('active');
+            document.body.classList.toggle('menu-open');
+            if (elements.radialMenu.classList.contains('active')) {
+              showMenu('emp');
+            } else {
+              elements.radialMenu.classList.add('closing');
+              setTimeout(() => {
+                elements.radialMenu.classList.remove('closing');
+                elements.toggleBtn.disabled = false;
+                state.isToggling = false;
+              }, 1000);
+            }
+            setTimeout(() => {
+              elements.toggleBtn.disabled = false;
+              state.isToggling = false;
+            }, 1000);
+          });
+
+          document.addEventListener('click', (event) => {
+            if (elements.radialMenu.classList.contains('active') && 
+                !elements.radialMenu.contains(event.target) && 
+                !elements.toggleBtn.contains(event.target)) {
+              console.log('Closing menu due to outside click');
+              if (state.isToggling) return;
+              state.isToggling = true;
+              elements.toggleBtn.disabled = true;
+              elements.radialMenu.classList.add('closing');
+              elements.radialMenu.classList.remove('active');
+              document.body.classList.remove('menu-open');
+              showMenu('emp');
+              setTimeout(() => {
+                elements.radialMenu.classList.remove('closing');
+                elements.toggleBtn.disabled = false;
+                state.isToggling = false;
+              }, 1000);
+            }
+          });
+
+          elements.moduleSelector.addEventListener('click', (event) => {
+            event.stopPropagation();
+          });
+
+          // Search functionality
+          elements.searchInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && elements.searchInput.value.trim()) {
+              utils.showAlert('info', `Searching for: ${elements.searchInput.value.trim()}`);
+              elements.searchInput.value = '';
+            }
+          });
+
+          elements.searchButton.addEventListener('click', () => {
+            if (elements.searchInput.value.trim()) {
+              utils.showAlert('info', `Searching for: ${elements.searchInput.value.trim()}`);
+              elements.searchInput.value = '';
+            } else {
+              utils.showAlert('warning', 'Please enter a search term');
+            }
           });
         },
 
@@ -1187,9 +1545,12 @@
           })
           .then(() => {
             localStorage.removeItem('token');
+            sessionStorage.removeItem('user');
             document.cookie = 'accessToken=; Max-Age=0; path=/;';
             document.cookie = 'refreshToken=; Max-Age=0; path=/;';
             state.isAuthenticated = false;
+            state.user = null;
+            state.token = null;
             utils.showAlert('success', 'Logged out successfully');
             core.showLoginView();
           })
@@ -1246,9 +1607,11 @@
             if (response.ok) {
               if (data.accessToken) {
                 localStorage.setItem('token', data.accessToken);
+                state.token = data.accessToken;
               }
               if (data.user) {
                 sessionStorage.setItem('user', JSON.stringify(data.user));
+                state.user = data.user;
               }
               state.isAuthenticated = true;
               utils.showAlert('success', 'Login successful! Redirecting...');
@@ -1282,18 +1645,12 @@
       const init = async () => {
         const isAuthenticated = await core.verifySession();
         if (isAuthenticated) {
-          core.initTheme();
-          core.initNavigation();
-          core.initSessionChecker();
-          setTimeout(() => {
-            utils.showAlert('success', `Welcome back, ${state.user.username || 'User'}!`);
-          }, 1000);
+          utils.showAlert('success', `Welcome back, ${state.user.username || 'User'}!`);
         } else {
           core.showLoginView();
           elements.eyeIcon.addEventListener('click', core.togglePassword);
           elements.loginForm.addEventListener('submit', core.handleLogin);
         }
-        elements.logoutBtn.addEventListener('click', core.handleLogout);
       };
 
       init();
