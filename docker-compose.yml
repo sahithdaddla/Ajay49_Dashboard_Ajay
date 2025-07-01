@@ -75,15 +75,6 @@ services:
     networks:
       - app_network
 
-<<<<<<< HEAD
-dashboard:
-    container_name: dashboard-ajay
-    build:
-      context: ./Frontend/dashboard
-      dockerfile: Dockerfile
-    ports:
-      - "8057:80"
-=======
   static-dashboard:
     container_name: static-ajay
     build:
@@ -91,15 +82,10 @@ dashboard:
       dockerfile: Dockerfile
     ports:
       - "7999:80"
->>>>>>> e0f398a (message)
     restart: unless-stopped
     networks:
       - app_network
 
-<<<<<<< HEAD
-=======
-
->>>>>>> e0f398a (message)
 volumes:
   postgres_data:
 
