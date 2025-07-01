@@ -46,11 +46,11 @@ const logger = winston.createLogger({
         printf(info => `${info.timestamp} [${info.level}] ${info.message}`)
       )
     }),
-    new winston.transports.File({
+    new winston.transports.File({ 
       filename: path.join(logDir, 'combined.log'),
       level: 'info'
     }),
-    new winston.transports.File({
+    new winston.transports.File({ 
       filename: path.join(logDir, 'errors.log'),
       level: 'error'
     }),
@@ -82,14 +82,12 @@ logger.info('Environment Configuration:', {
 const allowedOrigins = [
   'http://44.223.23.145:8012',
   'http://44.223.23.145:8013',
-  'http://44.223.23.145:8057',
   'http://44.223.23.145:8010',
   'http://44.223.23.145:3404',
   'http://127.0.0.1:5500',
   'http://127.0.0.1:5502',
   'http://localhost:8012',
   'http://localhost:8013',
-  'http://localhost:8057',
   'http://localhost:8010',
   process.env.FRONTEND_URL || 'http://44.223.23.145:3404',
 ];
@@ -98,8 +96,8 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) ||
-        origin.includes('localhost') ||
+    if (allowedOrigins.includes(origin) || 
+        origin.includes('localhost') || 
         origin.includes('127.0.0.1')) {
       callback(null, true);
     } else {
@@ -133,8 +131,6 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(frontendPath, 'login/index.html'));
 });
 
-
-
 app.get('/signup', (req, res) => {
   res.sendFile(path.join(frontendPath, 'signup/index.html'));
 });
@@ -151,9 +147,9 @@ app.use((req, res, next) => {
   res.on('finish', () => {
     const duration = Date.now() - start;
     logger.info(`${method} ${originalUrl} ${res.statusCode} ${duration}ms - ${ip}`);
-
-    if (originalUrl.includes('/auth') || originalUrl.includes('/login') ||
-        originalUrl.includes('/logout') || originalUrl.includes('/signup') ||
+    
+    if (originalUrl.includes('/auth') || originalUrl.includes('/login') || 
+        originalUrl.includes('/logout') || originalUrl.includes('/signup') || 
         originalUrl.includes('/forgot')) {
       logger.debug(`Auth Request: ${method} ${originalUrl}`, {
         headers: req.headers,
@@ -196,7 +192,7 @@ const REFRESH_TOKEN_EXPIRY = '7d';
 
 const verifyToken = (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
-
+  
   if (!token) {
     logger.warn('Access denied: No token provided');
     return res.status(401).json({ error: 'Access denied, no token provided' });
@@ -231,7 +227,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
+const upload = multer({ 
   storage,
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
@@ -242,15 +238,15 @@ async function initializeDatabase() {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-
+    
     const tables = await client.query(`
-      SELECT table_name
-      FROM information_schema.tables
+      SELECT table_name 
+      FROM information_schema.tables 
       WHERE table_schema = 'public'
     `);
-
+    
     const tableNames = tables.rows.map(row => row.table_name);
-
+    
     if (!tableNames.includes('users')) {
       await client.query(`
         CREATE TABLE users (
@@ -267,7 +263,7 @@ async function initializeDatabase() {
         )
       `);
     }
-
+    
     if (!tableNames.includes('sessions')) {
       await client.query(`
         CREATE TABLE sessions (
@@ -281,13 +277,13 @@ async function initializeDatabase() {
         )
       `);
     }
-
+    
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_email ON users(email);
       CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
       CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
     `);
-
+    
     await client.query('COMMIT');
     logger.info('Database schema verified/initialized successfully');
   } catch (err) {
@@ -354,8 +350,8 @@ app.get('/api/health', async (req, res) => {
   try {
     const dbCheck = await pool.query('SELECT version()');
     const uptime = process.uptime();
-
-    res.json({
+    
+    res.json({ 
       status: 'healthy',
       db: {
         connected: true,
@@ -368,7 +364,7 @@ app.get('/api/health', async (req, res) => {
     });
   } catch (err) {
     logger.error('Health check failed:', err);
-    res.status(503).json({
+    res.status(503).json({ 
       status: 'unhealthy',
       error: err.message,
       db: { connected: false },
@@ -380,18 +376,18 @@ app.get('/api/health', async (req, res) => {
 // Signup endpoint
 app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
   const { username, email, password } = req.body;
-
+  
   if (!username || !email || !password) {
     logger.warn('Signup attempt with missing fields');
     return res.status(400).json({ error: 'Missing required fields' });
   }
-
+  
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     logger.warn(`Invalid email format: ${email}`);
     return res.status(400).json({ error: 'Invalid email format' });
   }
-
+  
   if (password.length < 8) {
     logger.warn('Password too short');
     return res.status(400).json({ error: 'Password must be at least 8 characters' });
@@ -399,10 +395,10 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
 
   try {
     const userExists = await pool.query(
-      'SELECT id FROM users WHERE email = $1 OR username = $2',
+      'SELECT id FROM users WHERE email = $1 OR username = $2', 
       [email, username]
     );
-
+    
     if (userExists.rows.length > 0) {
       logger.warn(`Signup attempt with existing email/username: ${email}/${username}`);
       return res.status(409).json({ error: 'Username or email already exists' });
@@ -410,35 +406,35 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
-
+    
     const result = await pool.query(
-      `INSERT INTO users
-       (username, email, password, profile_image)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO users 
+       (username, email, password, profile_image) 
+       VALUES ($1, $2, $3, $4) 
        RETURNING id, username, email, profile_image, created_at`,
       [username, email, hashedPassword, profileImage]
     );
 
     const verificationToken = jwt.sign(
-      { userId: result.rows[0].id, email },
-      JWT_SECRET,
+      { userId: result.rows[0].id, email }, 
+      JWT_SECRET, 
       { expiresIn: '1d' }
     );
 
     logger.debug(`Verification token generated for ${email}`);
-
-    res.status(201).json({
+    
+    res.status(201).json({ 
       message: 'User created successfully.',
       user: result.rows[0],
       verificationToken
     });
   } catch (err) {
     logger.error('Signup error:', err);
-
+    
     if (req.file) {
       fs.unlink(req.file.path, () => {});
     }
-
+    
     res.status(500).json({ error: 'Registration failed. Please try again.' });
   }
 });
@@ -446,7 +442,7 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
 // Login endpoint
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-
+  
   if (!email || !password) {
     logger.warn('Login attempt with missing credentials');
     return res.status(400).json({ error: 'Email and password are required' });
@@ -454,17 +450,17 @@ app.post('/api/login', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, username, email, password, profile_image FROM users WHERE email = $1',
+      'SELECT id, username, email, password, profile_image FROM users WHERE email = $1', 
       [email]
     );
-
+    
     if (result.rows.length === 0) {
       logger.warn(`Login attempt for non-existent email: ${email}`);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = result.rows[0];
-
+    
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       logger.warn(`Invalid password attempt for email: ${email}`);
@@ -472,14 +468,14 @@ app.post('/api/login', async (req, res) => {
     }
 
     const accessToken = jwt.sign(
-      { userId: user.id, email: user.email },
-      JWT_SECRET,
+      { userId: user.id, email: user.email }, 
+      JWT_SECRET, 
       { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
-
+    
     const refreshToken = jwt.sign(
-      { userId: user.id },
-      JWT_SECRET,
+      { userId: user.id }, 
+      JWT_SECRET, 
       { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
 
@@ -496,7 +492,7 @@ app.post('/api/login', async (req, res) => {
       sameSite: 'strict',
       maxAge: 58 * 60 * 1000 // 58 minutes
     });
-
+    
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -505,7 +501,7 @@ app.post('/api/login', async (req, res) => {
     });
 
     const { password: _, ...userData } = user;
-
+    
     res.json({
       message: 'Login successful',
       user: userData,
@@ -521,7 +517,7 @@ app.post('/api/login', async (req, res) => {
 // Forgot password endpoint
 app.post('/api/forgot', async (req, res) => {
   const { email, newPassword, confirmNewPassword } = req.body;
-
+  
   if (!email || !newPassword || !confirmNewPassword) {
     logger.warn('Forgot password attempt with missing fields');
     return res.status(400).json({ error: 'Email, new password, and confirm password are required' });
@@ -540,7 +536,7 @@ app.post('/api/forgot', async (req, res) => {
 
   try {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
+    
     if (result.rows.length === 0) {
       logger.warn(`Forgot password attempt for non-existent email: ${email}`);
       return res.status(404).json({ error: 'User not found' });
@@ -563,7 +559,7 @@ app.post('/api/forgot', async (req, res) => {
 // Email check endpoint
 app.post('/check-email-data', async (req, res) => {
   const { email } = req.body;
-
+  
   if (!email) {
     logger.warn('Email check attempt with missing email');
     return res.status(400).json({ error: 'Email is required' });
@@ -594,10 +590,10 @@ app.get('/api/profile', verifyToken, async (req, res) => {
     }
 
     const user = result.rows[0];
-
+    
     const profileData = {
       ...user,
-      profile_image: user.profile_image
+      profile_image: user.profile_image 
         ? `${req.protocol}://${req.get('host')}${user.profile_image}`
         : null
     };
@@ -633,7 +629,7 @@ app.post('/api/logout', verifyToken, async (req, res) => {
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
-
+  
   logger.error('Error:', {
     statusCode,
     message,
@@ -684,7 +680,7 @@ process.on('SIGINT', () => {
 function rotateLogs() {
   const files = fs.readdirSync(logDir);
   const dateStr = new Date().toISOString().split('T')[0];
-
+  
   files.forEach(file => {
     if (file.endsWith('.log') && !file.includes(dateStr)) {
       const oldPath = path.join(logDir, file);
@@ -700,4 +696,3 @@ setInterval(() => {
     rotateLogs();
   }
 }, 60 * 1000);
-
