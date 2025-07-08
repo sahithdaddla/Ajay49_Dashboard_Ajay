@@ -21,6 +21,12 @@ if (fs.existsSync(path.join(__dirname, 'server.env'))) {
 
 const app = express();
 
+// Create Uploads directory if it doesn't exist
+const uploadDir = './Uploads/';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 // Enhanced Logging Setup
 const logDir = 'logs';
 if (!fs.existsSync(logDir)) {
@@ -82,19 +88,18 @@ logger.info('Environment Configuration:', {
 const allowedOrigins = [
   'http://44.223.23.145:8012',
   'http://44.223.23.145:8013',
+  'http://44.223.23.145:8057',
   'http://44.223.23.145:8010',
-  'http://44.223.23.145:8011',
   'http://44.223.23.145:3404',
   'http://127.0.0.1:5500',
   'http://127.0.0.1:5502',
-  'http://44.223.23.145:8012',
-  'http://44.223.23.145:8013',
-  'http://44.223.23.145:8010',
-  'http://44.223.23.145:8011',
-  process.env.FRONTEND_URL || 'http://44.223.23.145:8012',
+  'http://localhost:8012',
+  'http://localhost:8013',
+  'http://localhost:8057',
+  'http://localhost:8010',
+  process.env.FRONTEND_URL || 'http://44.223.23.145:3404',
 ];
 
-// Enhanced CORS setup
 app.use(cors({
   origin: (origin, callback) => {
     logger.debug(`CORS request from: ${origin}`);
@@ -110,40 +115,16 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-
-// Serve uploads with proper CORS headers
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
   next();
 }, express.static(path.join(__dirname, 'Uploads')));
 
-
-
-// Serve frontend static files
-const frontendPath = path.join(__dirname, '../frontend');
-app.use(express.static(frontendPath));
-
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'login/index.html'));
-});
-
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'dashboard/index.html'));
-});
-
-app.get('/signup', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'signup/index.html'));
-});
-
-app.get('/forgotpassword', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'forgotpassword/index.html'));
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -154,7 +135,7 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     logger.info(`${method} ${originalUrl} ${res.statusCode} ${duration}ms - ${ip}`);
     
-    if (originalUrl.includes('/auth') || originalUrl.includes('/login') || originalUrl.includes('/logout') || originalUrl.includes('/signup') || originalUrl.includes('/forgot')) {
+    if (originalUrl.includes('/auth') || originalUrl.includes('/login') || originalUrl.includes('/logout')) {
       logger.debug(`Auth Request: ${method} ${originalUrl}`, {
         headers: req.headers,
         body: method === 'POST' ? req.body : null
@@ -168,7 +149,7 @@ app.use((req, res, next) => {
 // Database Configuration
 const pool = new Pool({
   user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'postgres',
+  host: process.env.DB_HOST || 'postgres-ajay',
   database: process.env.DB_NAME || 'new_employee_db',
   password: process.env.DB_PASSWORD || 'admin123',
   port: process.env.DB_PORT || 5432,
@@ -187,11 +168,10 @@ pool.on('error', (err) => {
 
 // JWT Configuration
 const JWT_SECRET = process.env.JWT_SECRET || 'Abderoiouwi@12342';
-const ACCESS_TOKEN_EXPIRY = '58m';
+const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
-
 const verifyToken = (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+  const token = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
   
   if (!token) {
     logger.warn('Access denied: No token provided');
@@ -208,7 +188,6 @@ const verifyToken = (req, res, next) => {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
-
 // File Upload Configuration
 const storage = multer.diskStorage({
   destination: './Uploads/',
@@ -230,7 +209,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ 
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // Database Initialization
@@ -240,7 +219,7 @@ async function initializeDatabase() {
     await client.query('BEGIN');
     
     await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
+      CREATE TABLE IF NOT EXISTS user_accounts (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
@@ -253,9 +232,9 @@ async function initializeDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       
-      CREATE TABLE IF NOT EXISTS sessions (
+      CREATE TABLE IF NOT EXISTS auth_sessions (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES user_accounts(id) ON DELETE CASCADE,
         token TEXT NOT NULL,
         ip_address TEXT,
         user_agent TEXT,
@@ -263,9 +242,22 @@ async function initializeDatabase() {
         expires_at TIMESTAMP NOT NULL
       );
       
-      CREATE INDEX IF NOT EXISTS idx_email ON users(email);
-      CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
+      CREATE TABLE IF NOT EXISTS personnel (
+        emp_id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        job_role VARCHAR(100),
+        location VARCHAR(100),
+        department VARCHAR(100),
+        hire_date DATE,
+        phone VARCHAR(20),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      
+      CREATE INDEX IF NOT EXISTS idx_email ON user_accounts(email);
+      CREATE INDEX IF NOT EXISTS idx_sessions_user ON auth_sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_token ON auth_sessions(token);
+      CREATE INDEX IF NOT EXISTS idx_personnel_email ON personnel(email);
     `);
     
     await client.query('COMMIT');
@@ -279,7 +271,6 @@ async function initializeDatabase() {
   }
 }
 
-// Database Connection
 async function connectWithRetry() {
   return retry(
     async () => {
@@ -314,6 +305,8 @@ connectWithRetry().catch(err => {
 });
 
 // API Endpoints
+
+// Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
     const dbCheck = await pool.query('SELECT 1');
@@ -336,33 +329,47 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Check email availability endpoint
+app.post('/check-email-data', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    const result = await pool.query('SELECT id FROM user_accounts WHERE email = $1', [email]);
+    res.json({ exists: result.rows.length > 0 });
+  } catch (err) {
+    logger.error('Check email error:', err);
+    res.status(500).json({ error: 'Error checking email availability' });
+  }
+});
+
+// Signup endpoint
 app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
   const { username, email, password } = req.body;
   
   if (!username || !email || !password) {
-    logger.warn('Signup attempt with missing fields');
     return res.status(400).json({ error: 'Missing required fields' });
   }
   
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*@(gmail\.com|outlook\.com)$/;
   if (!emailRegex.test(email)) {
-    logger.warn(`Invalid email format: ${email}`);
-    return res.status(400).json({ error: 'Invalid email format' });
+    return res.status(400).json({ error: 'Only gmail.com or outlook.com domains allowed' });
   }
   
   if (password.length < 8) {
-    logger.warn('Password too short');
     return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
 
   try {
     const userExists = await pool.query(
-      'SELECT id FROM users WHERE email = $1 OR username = $2', 
+      'SELECT id FROM user_accounts WHERE email = $1 OR username = $2', 
       [email, username]
     );
     
     if (userExists.rows.length > 0) {
-      logger.warn(`Signup attempt with existing email/username: ${email}/${username}`);
       return res.status(409).json({ error: 'Username or email already exists' });
     }
 
@@ -370,7 +377,7 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
     const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
     
     const result = await pool.query(
-      `INSERT INTO users 
+      `INSERT INTO user_accounts 
        (username, email, password, profile_image) 
        VALUES ($1, $2, $3, $4) 
        RETURNING id, username, email, profile_image, created_at`,
@@ -378,7 +385,7 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
     );
 
     const verificationToken = jwt.sign(
-      { userId: result.rows[0].id, email }, 
+      { userId: result.rows[0].id, email: result.rows[0].email }, 
       JWT_SECRET, 
       { expiresIn: '1d' }
     );
@@ -400,17 +407,17 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
   }
 });
 
+// Login endpoint
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   
   if (!email || !password) {
-    logger.warn('Login attempt with missing credentials');
     return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
     const result = await pool.query(
-      'SELECT id, username, email, password, profile_image FROM users WHERE email = $1', 
+      'SELECT id, username, email, password, profile_image FROM user_accounts WHERE email = $1', 
       [email]
     );
     
@@ -440,7 +447,7 @@ app.post('/api/login', async (req, res) => {
     );
 
     await pool.query(
-      'INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, $3)',
+      'INSERT INTO auth_sessions (user_id, token, expires_at) VALUES ($1, $2, $3)',
       [user.id, refreshToken, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)]
     );
 
@@ -462,9 +469,18 @@ app.post('/api/login', async (req, res) => {
 
     const { password: _, ...userData } = user;
     
+    // Fetch personnel details
+    const personnelResult = await pool.query(
+      'SELECT emp_id, name, email, job_role, location, department, hire_date, phone FROM personnel WHERE email = $1',
+      [email]
+    );
+
+    const personnelData = personnelResult.rows.length > 0 ? personnelResult.rows[0] : null;
+
     res.json({
       message: 'Login successful',
       user: userData,
+      personnel: personnelData,
       accessToken,
       refreshToken
     });
@@ -474,75 +490,40 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-app.post('/api/forgot', async (req, res) => {
-  const { email, newPassword, confirmNewPassword } = req.body;
-  
-  if (!email || !newPassword || !confirmNewPassword) {
-    logger.warn('Forgot password attempt with missing fields');
-    return res.status(400).json({ error: 'Email, new password, and confirm password are required' });
-  }
-
-  if (newPassword !== confirmNewPassword) {
-    logger.warn('Forgot password attempt with mismatched passwords');
-    return res.status(400).json({ error: 'Passwords do not match' });
-  }
-
-  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
-  if (!passwordRegex.test(newPassword)) {
-    logger.warn('Forgot password attempt with invalid password format');
-    return res.status(400).json({ error: 'Password must be at least 8 characters and include uppercase, number, and symbol' });
-  }
-
+// Personnel details endpoint
+app.get('/api/personnel', verifyToken, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    
-    if (result.rows.length === 0) {
-      logger.warn(`Forgot password attempt for non-existent email: ${email}`);
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-    await pool.query(
-      'UPDATE users SET password = $1, reset_token = NULL, reset_token_expiry = NULL WHERE email = $2',
-      [hashedPassword, email]
+    const { email } = req.user;
+    const result = await pool.query(
+      'SELECT emp_id, name, email, job_role, location, department, hire_date, phone FROM personnel WHERE email = $1',
+      [email]
     );
 
-    logger.debug(`Password reset successful for ${email}`);
-    res.json({ message: 'Password reset successfully' });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Personnel details not found' });
+    }
+
+    res.json({
+      message: 'Personnel details fetched successfully',
+      personnel: result.rows[0]
+    });
   } catch (err) {
-    logger.error('Forgot password error:', err);
-    res.status(500).json({ error: 'Failed to reset password' });
+    logger.error('Personnel fetch error:', err);
+    res.status(500).json({ error: 'Failed to fetch personnel details' });
   }
 });
 
-app.post('/check-email-data', async (req, res) => {
-  const { email } = req.body;
-  
-  if (!email) {
-    logger.warn('Email check attempt with missing email');
-    return res.status(400).json({ error: 'Email is required' });
-  }
-
-  try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    res.json({ exists: result.rows.length > 0 });
-  } catch (err) {
-    logger.error('Email check error:', err);
-    res.status(500).json({ error: 'Failed to check email' });
-  }
-});
-
+// Profile endpoint
 app.get('/api/profile', verifyToken, async (req, res) => {
   try {
     const { userId } = req.user;
 
     const result = await pool.query(
-      'SELECT id, username, email, profile_image FROM users WHERE id = $1',
+      'SELECT id, username, email, profile_image FROM user_accounts WHERE id = $1',
       [userId]
     );
 
     if (result.rows.length === 0) {
-      logger.warn(`Profile fetch attempt for non-existent user: ${userId}`);
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -565,15 +546,15 @@ app.get('/api/profile', verifyToken, async (req, res) => {
   }
 });
 
+// Logout endpoint
 app.post('/api/logout', verifyToken, async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
-    await pool.query('DELETE FROM sessions WHERE token = $1', [refreshToken]);
+    await pool.query('DELETE FROM auth_sessions WHERE token = $1', [refreshToken]);
 
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
 
-    logger.debug('User logged out successfully');
     res.json({ message: 'Logged out successfully' });
   } catch (err) {
     logger.error('Logout error:', err);
@@ -581,6 +562,46 @@ app.post('/api/logout', verifyToken, async (req, res) => {
   }
 });
 
+// Forgot Password endpoint
+app.post('/api/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT id FROM user_accounts WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      logger.warn(`Password reset attempt for non-existent email: ${email}`);
+      return res.status(404).json({ error: 'Email not found' });
+    }
+
+    const resetToken = jwt.sign(
+      { userId: result.rows[0].id, email },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    await pool.query(
+      'UPDATE user_accounts SET reset_token = $1, reset_token_expiry = $2 WHERE email = $3',
+      [resetToken, new Date(Date.now() + 60 * 60 * 1000), email]
+    );
+
+    logger.debug(`Password reset token generated for ${email}`);
+
+    res.json({ message: 'Password reset link sent to your email.' });
+  } catch (err) {
+    logger.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Failed to process request. Please try again.' });
+  }
+});
+
+// Error Handling
 app.use((err, req, res, next) => {
   logger.error('Server error:', {
     message: err.message,
@@ -596,13 +617,15 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 3404;
+// Server Startup
+const PORT = process.env.PORT || 3404; // Updated to match frontend
 app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running on port ${PORT}`);
   logger.info(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
+// Log rotation
 function rotateLogs() {
   const files = fs.readdirSync(logDir);
   const dateStr = new Date().toISOString().split('T')[0];
@@ -622,4 +645,3 @@ setInterval(() => {
     rotateLogs();
   }
 }, 60 * 1000);
-
