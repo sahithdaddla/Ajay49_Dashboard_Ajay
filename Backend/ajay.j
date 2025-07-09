@@ -188,7 +188,6 @@ const verifyToken = (req, res, next) => {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
-
 // File Upload Configuration
 const storage = multer.diskStorage({
   destination: './Uploads/',
@@ -213,13 +212,12 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-// Database Initialization with robust table creation
+// Database Initialization
 async function initializeDatabase() {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     
-    // Create user_accounts table
     await client.query(`
       CREATE TABLE IF NOT EXISTS user_accounts (
         id SERIAL PRIMARY KEY,
@@ -233,10 +231,7 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
-    
-    // Create auth_sessions table
-    await client.query(`
+      
       CREATE TABLE IF NOT EXISTS auth_sessions (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES user_accounts(id) ON DELETE CASCADE,
@@ -246,10 +241,7 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         expires_at TIMESTAMP NOT NULL
       );
-    `);
-    
-    // Create personnel table with explicit column creation
-    await client.query(`
+      
       CREATE TABLE IF NOT EXISTS personnel (
         emp_id VARCHAR(50) PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -261,21 +253,7 @@ async function initializeDatabase() {
         phone VARCHAR(20),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-    `);
-    
-    // Verify personnel table structure
-    const check = await client.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'personnel' AND column_name = 'emp_id'
-    `);
-    
-    if (check.rows.length === 0) {
-      throw new Error('Failed to create emp_id column in personnel table');
-    }
-    
-    // Create indexes
-    await client.query(`
+      
       CREATE INDEX IF NOT EXISTS idx_email ON user_accounts(email);
       CREATE INDEX IF NOT EXISTS idx_sessions_user ON auth_sessions(user_id);
       CREATE INDEX IF NOT EXISTS idx_sessions_token ON auth_sessions(token);
@@ -328,25 +306,15 @@ connectWithRetry().catch(err => {
 
 // API Endpoints
 
-// Enhanced health check endpoint
+// Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
     const dbCheck = await pool.query('SELECT 1');
     const uptime = process.uptime();
     
-    // Verify personnel table structure
-    const tableCheck = await pool.query(`
-      SELECT column_name 
-      FROM information_schema.columns 
-      WHERE table_name = 'personnel'
-    `);
-    
-    const hasEmpId = tableCheck.rows.some(row => row.column_name === 'emp_id');
-    
     res.json({ 
-      status: hasEmpId ? 'healthy' : 'degraded',
+      status: 'healthy',
       db: dbCheck ? 'connected' : 'disconnected',
-      tables: tableCheck.rows,
       uptime: `${Math.floor(uptime / 60)} minutes`,
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development'
@@ -439,7 +407,7 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
   }
 });
 
-// Login endpoint with personnel data handling
+// Login endpoint
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   
@@ -501,18 +469,13 @@ app.post('/api/login', async (req, res) => {
 
     const { password: _, ...userData } = user;
     
-    // Fetch personnel details with error handling
-    let personnelData = null;
-    try {
-      const personnelResult = await pool.query(
-        'SELECT emp_id, name, email, job_role, location, department, hire_date, phone FROM personnel WHERE email = $1',
-        [email]
-      );
-      personnelData = personnelResult.rows.length > 0 ? personnelResult.rows[0] : null;
-    } catch (personnelErr) {
-      logger.warn('Personnel data fetch failed, proceeding without:', personnelErr.message);
-      personnelData = null;
-    }
+    // Fetch personnel details
+    const personnelResult = await pool.query(
+      'SELECT emp_id, name, email, job_role, location, department, hire_date, phone FROM personnel WHERE email = $1',
+      [email]
+    );
+
+    const personnelData = personnelResult.rows.length > 0 ? personnelResult.rows[0] : null;
 
     res.json({
       message: 'Login successful',
@@ -655,7 +618,7 @@ app.use((err, req, res, next) => {
 });
 
 // Server Startup
-const PORT = process.env.PORT || 3404;
+const PORT = process.env.PORT || 3404; // Updated to match frontend
 app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running on port ${PORT}`);
   logger.info(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);

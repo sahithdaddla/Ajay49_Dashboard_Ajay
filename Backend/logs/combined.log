@@ -20,3 +20,19 @@
 2025-06-25 14:20:12 [warn] Retry attempt 1: getaddrinfo EAI_AGAIN postgres
 2025-06-25 14:20:14 [warn] Retry attempt 2: getaddrinfo EAI_AGAIN postgres
 2025-06-25 14:20:18 [warn] Retry attempt 3: getaddrinfo EAI_AGAIN postgres
+2025-07-08 14:37:23 [info] Environment Configuration:
+2025-07-08 14:37:23 [info] Server running on port 3404
+2025-07-08 14:37:23 [info] Allowed CORS origins: http://44.223.23.145:8012, http://44.223.23.145:8013, http://44.223.23.145:8057, http://44.223.23.145:8010, http://44.223.23.145:3404, http://127.0.0.1:5500, http://127.0.0.1:5502, http://localhost:8012, http://localhost:8013, http://localhost:8057, http://localhost:8010, http://44.223.23.145:3404
+2025-07-08 14:37:23 [info] Environment: development
+2025-07-08 14:37:23 [warn] Retry attempt 1: getaddrinfo EAI_AGAIN postgres
+2025-07-08 14:37:25 [warn] Retry attempt 2: getaddrinfo EAI_AGAIN postgres
+2025-07-08 14:37:27 [warn] Retry attempt 3: getaddrinfo EAI_AGAIN postgres
+2025-07-08 14:37:33 [warn] Retry attempt 4: getaddrinfo EAI_AGAIN postgres
+2025-07-08 14:40:50 [info] Environment Configuration:
+2025-07-08 14:40:50 [info] Server running on port 3404
+2025-07-08 14:40:50 [info] Allowed CORS origins: http://44.223.23.145:8012, http://44.223.23.145:8013, http://44.223.23.145:8057, http://44.223.23.145:8010, http://44.223.23.145:3404, http://127.0.0.1:5500, http://127.0.0.1:5502, http://localhost:8012, http://localhost:8013, http://localhost:8057, http://localhost:8010, http://44.223.23.145:3404
+2025-07-08 14:40:50 [info] Environment: development
+2025-07-08 14:40:50 [warn] Retry attempt 1: getaddrinfo EAI_AGAIN postgres
+2025-07-08 14:40:52 [warn] Retry attempt 2: getaddrinfo EAI_AGAIN postgres
+2025-07-08 14:40:56 [warn] Retry attempt 3: getaddrinfo EAI_AGAIN postgres
+2025-07-08 14:41:00 [warn] Retry attempt 4: getaddrinfo EAI_AGAIN postgres

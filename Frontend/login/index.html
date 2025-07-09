@@ -1,8 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HRMS Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -92,7 +91,6 @@
       border: 0.5px solid #ccc;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
       position: relative;
-      position: relative;
     }
 
     .search-bar:hover {
@@ -127,50 +125,6 @@
 
     .search-bar button:hover {
       color: var(--primary-color);
-    }
-
-    .autocomplete-dropdown {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background-color: var(--light-color);
-      border-radius: 8px;
-      box-shadow: var(--shadow-md);
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 1000;
-      margin-top: 4px;
-      display: none;
-    }
-
-    .autocomplete-item {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      color: var(--gray-700);
-      transition: var(--transition);
-    }
-
-    .autocomplete-item img {
-      width: 20px;
-      height: 20px;
-      margin-right: 10px;
-      object-fit: contain;
-    }
-
-    .autocomplete-item:hover {
-      background-color: var(--gray-100);
-      color: var(--primary-color);
-    }
-
-    .no-results {
-      padding: 10px;
-      font-size: 0.9rem;
-      color: var(--gray-700);
-      text-align: center;
     }
 
     .autocomplete-dropdown {
@@ -434,7 +388,7 @@
 
     /* Tooltip positions for HR modules */
     .hr-menu .menu-item[data-module="hr_attendance"] .tooltip { transform: translate(-50%, -100%); }
-  ;hr-menu .menu-item[data-module="hr_leave"] .tooltip { transform: translate(-40%, -90%); }
+    .hr-menu .menu-item[data-module="hr_leave"] .tooltip { transform: translate(-40%, -90%); }
     .hr-menu .menu-item[data-module="hr_wfh"] .tooltip { transform: translate(-30%, -70%); }
     .hr-menu .menu-item[data-module="hr_payslip"] .tooltip { transform: translate(-20%, -50%); }
     .hr-menu .menu-item[data-module="hr_tasks"] .tooltip { transform: translate(-10%, -30%); }
@@ -535,23 +489,6 @@
       color: #f8fafc;
     }
 
-    .dark-mode .autocomplete-dropdown {
-      background-color: #1e293b;
-    }
-
-    .dark-mode .autocomplete-item {
-      color: #f8fafc;
-    }
-
-    .dark-mode .autocomplete-item:hover {
-      background-color: #334155;
-      color: var(--primary-color);
-    }
-
-    .dark-mode .no-results {
-      color: #f8fafc;
-    }
-
     body.dark-mode .header-icon,
     body.dark-mode .toggle-btn {
       color: #ffffff;
@@ -612,7 +549,7 @@
       gap: 12px;
       box-shadow: var(--shadow-xl);
       z-index: 1000;
-      animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+      animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1),
                  slideOutRight 0.5s cubic-bezier(0.5, 0, 0.75, 0) 2.5s forwards;
       max-width: 350px;
       backdrop-filter: blur(10px);
@@ -1141,10 +1078,8 @@
       </div>
       <div class="header-right">
         <div class="search-bar" id="searchBar">
-        <div class="search-bar" id="searchBar">
           <input type="text" id="searchInput" placeholder="Search employees, reports..." />
           <button id="searchButton"><i class="fas fa-search"></i></button>
-          <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
           <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
         </div>
         <div class="header-icon" id="themeToggle" title="Toggle theme">
@@ -1283,54 +1218,59 @@
       </div>
     </div>
 
- 
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const config = {
-        apiBaseUrl: 'http://44.223.23.145:3404/api',
-        authUrls: {
-          login: 'http://44.223.23.145:8012',
-          signup: 'http://44.223.23.145:8013/',
-          forgotPassword: 'http://44.223.23.145:8010'
-        },
-        modules: {
-          emp_attendance: 'http://44.223.23.145:8051/',
-          emp_leave: 'http://44.223.23.145:8037/',
-          emp_wfh: 'http://44.223.23.145:8025/',
-          emp_payslip: 'http://3.85.61.23:7019/',
-          emp_tasks: 'http://44.223.23.145:8045/',
-          emp_helpdesk: 'http://44.223.23.145:8049/',
-          emp_Onboarding: 'http://44.223.23.145:8039/',
-          emp_benefits: 'http://44.223.23.145:8043/',
-          emp_Appraisal: 'http://44.223.23.145:8014/',
-          emp_notifications: 'http://44.223.23.145:8053/',
-          emp_asset: 'http://44.223.23.145:8047/',
-          emp_bonus: 'http://44.223.23.145:8055/',
-          emp_joblists: 'http://3.85.61.23:8020/',
-          emp_claim: 'http://44.223.23.145:8027/',
-          emp_offboarding: 'http://44.223.23.145:8041/',
-          emp_jobapplication: 'http://44.223.23.145:8031/',
-          emp_offerletter: 'http://44.223.23.145:8033/',
-          emp_logout: '',
-          hr_attendance: 'http://44.223.23.145:8052/',
-          hr_leave: 'http://44.223.23.145:8038/',
-          hr_wfh: 'http://44.223.23.145:8026/',
-          hr_payslip: 'http://3.85.61.23:7020/',
-          hr_tasks: 'http://44.223.23.145:8046/',
-          hr_helpdesk: 'http://44.223.23.145:8050/',
-          hr_Onboarding: 'http://44.223.23.145:8040/',
-          hr_employeemanagement: 'http://44.223.23.145:8036/',
-          hr_benefits: 'http://44.223.23.145:8044/',
-          hr_appraisal: 'http://44.223.23.145:8015/',
-          hr_notifications: 'http://44.223.23.145:8054/',
-          hr_asset: 'http://44.223.23.145:8048/',
-          hr_bonus: 'http://44.223.23.145:8056/',
-          hr_joblists: 'http://3.85.61.23:8021/',
-          hr_claim: 'http://44.223.23.145:8028/',
-          hr_offboarding: 'http://44.223.23.145:8042/',
-          hr_jobapplication: 'http://44.223.23.145:8032/',
-          hr_logout: ''
-        },
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+      <iframe id="contentFrame" src="http://44.223.23.145:7999/" loading="lazy"></iframe>
+    </main>
+  </div>
+<script>
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const config = {
+    apiBaseUrl: 'http://44.223.23.145:3404/api',
+    authUrls: {
+      login: 'http://44.223.23.145:8012',
+      signup: 'http://44.223.23.145:8013/',
+      forgotPassword: 'http://44.223.23.145:8010'
+    },
+    modules: {
+      emp_attendance: 'http://44.223.23.145:8051/',
+      emp_leave: 'http://44.223.23.145:8037/',
+      emp_wfh: 'http://44.223.23.145:8025/',
+      emp_payslip: 'http://3.85.61.23:7019/',
+      emp_tasks: 'http://44.223.23.145:8045/',
+      emp_helpdesk: 'http://44.223.23.145:8049/',
+      emp_Onboarding: 'http://44.223.23.145:8039/',
+      emp_benefits: 'http://44.223.23.145:8043/',
+      emp_Appraisal: 'http://44.223.23.145:8014/',
+      emp_notifications: 'http://44.223.23.145:8053/',
+      emp_asset: 'http://44.223.23.145:8047/',
+      emp_bonus: 'http://44.223.23.145:8055/',
+      emp_joblists: 'http://3.85.61.23:8020/',
+      emp_claim: 'http://44.223.23.145:8027/',
+      emp_offboarding: 'http://44.223.23.145:8041/',
+      emp_jobapplication: 'http://44.223.23.145:8031/',
+      emp_offerletter: 'http://44.223.23.145:8033/',
+      emp_logout: '',
+      hr_attendance: 'http://44.223.23.145:8052/',
+      hr_leave: 'http://44.223.23.145:8038/',
+      hr_wfh: 'http://44.223.23.145:8026/',
+      hr_payslip: 'http://3.85.61.23:7020/',
+      hr_tasks: 'http://44.223.23.145:8046/',
+      hr_helpdesk: 'http://44.223.23.145:8050/',
+      hr_Onboarding: 'http://44.223.23.145:8040/',
+      hr_employeemanagement: 'http://44.223.23.145:8036/',
+      hr_benefits: 'http://44.223.23.145:8044/',
+      hr_appraisal: 'http://44.223.23.145:8015/',
+      hr_notifications: 'http://44.223.23.145:8054/',
+      hr_asset: 'http://44.223.23.145:8048/',
+      hr_bonus: 'http://44.223.23.145:8056/',
+      hr_joblists: 'http://3.85.61.23:8021/',
+      hr_claim: 'http://44.223.23.145:8028/',
+      hr_offboarding: 'http://44.223.23.145:8042/',
+      hr_jobapplication: 'http://44.223.23.145:8032/',
+      hr_logout: ''
+    },
     sessionCheckInterval: 300000
   };
 
@@ -1395,7 +1335,7 @@
       console.error('API Error:', error);
       utils.showAlert('error', error.message || 'An error occurred');
       if (error.status === 401) {
-        core.verifySession(); // Attempt to refresh and re-verify
+        core.verifySession();
       }
     },
 
@@ -1425,7 +1365,6 @@
         if (!response.ok) {
           const errorData = await response.json();
           if (response.status === 401 && state.refreshToken) {
-            // Attempt to refresh token
             const refreshResponse = await fetch(`${config.apiBaseUrl}/refresh`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -1435,7 +1374,7 @@
 
             if (refreshResponse.ok) {
               const { accessToken } = await refreshResponse.json();
-              document.cookie = `accessToken=${accessToken}; maxAge=900; path=/`; // 15 minutes
+              document.cookie = `accessToken=${accessToken}; maxAge=900; path=/`;
               state.token = accessToken;
               options.headers = { ...options.headers, 'Authorization': `Bearer ${accessToken}` };
               return await fetch(`${config.apiBaseUrl}${url}`, options);
@@ -1475,7 +1414,6 @@
     verifySession: async () => {
       const token = utils.getCookie('accessToken') || state.token;
       const refreshToken = utils.getCookie('refreshToken') || state.refreshToken;
-      console.log('Verifying session:', { token, refreshToken });
 
       if (!token && !refreshToken) {
         state.isAuthenticated = false;
@@ -1486,20 +1424,25 @@
       try {
         const response = await utils.fetchWithAuth('/profile');
         state.user = response.profile;
-        state.personnelDetails = response.personnel || null; // Get personnel details
-        
-        // Store personnel details in localStorage if available
+        state.personnelDetails = response.personnel || null;
+
         if (state.personnelDetails) {
-          localStorage.setItem('abccompanyempdetails', JSON.stringify(state.personnelDetails));
+          try {
+            localStorage.setItem('abccompanyempdetails', JSON.stringify(state.personnelDetails));
+          } catch (storageError) {
+            console.error('Failed to save to localStorage:', storageError);
+          }
+        } else {
+          localStorage.removeItem('abccompanyempdetails');
         }
-        
+
         state.token = token;
         state.isAuthenticated = true;
 
         setTimeout(() => {
           elements.avatarSkeleton.style.display = 'none';
           elements.userAvatar.style.display = 'block';
-          elements.userAvatar.src = state.user.profile_image || 
+          elements.userAvatar.src = state.user.profile_image ||
             'https://img.icons8.com/fluency/48/user-male-circle.png';
           elements.userName.textContent = state.user.username || 'User';
           elements.userName.style.opacity = 0;
@@ -1523,9 +1466,9 @@
 
             if (refreshResponse.ok) {
               const { accessToken } = await refreshResponse.json();
-              document.cookie = `accessToken=${accessToken}; maxAge=900; path=/`; // 15 minutes
+              document.cookie = `accessToken=${accessToken}; maxAge=900; path=/`;
               state.token = accessToken;
-              return await core.verifySession(); // Retry with new token
+              return await core.verifySession();
             }
           } catch (refreshError) {
             console.error('Refresh token failed:', refreshError);
@@ -1584,7 +1527,6 @@
       positionMenuItems(elements.hrMenu, elements.hrMenu.querySelectorAll('.menu-item').length);
 
       const showMenu = (menuType) => {
-        console.log(`Showing menu: ${menuType}`);
         elements.empMenu.classList.remove('active');
         elements.hrMenu.classList.remove('active');
         if (menuType === 'emp') {
@@ -1599,7 +1541,6 @@
       elements.moduleSelector.addEventListener('change', (event) => {
         event.stopPropagation();
         const module = event.target.value;
-        console.log(`Dropdown selected: ${module}`);
         showMenu(module);
       });
 
@@ -1608,7 +1549,6 @@
           item.addEventListener('click', (event) => {
             event.stopPropagation();
             const module = item.dataset.module;
-            console.log(`Module clicked: ${module}`);
             if (module === 'emp_logout' || module === 'hr_logout') {
               core.handleLogout();
               return;
@@ -1623,7 +1563,6 @@
                 };
               }, 200);
             } else {
-              console.warn(`No URL found for module: ${module}`);
               utils.showAlert('error', `Module ${module} not found`);
             }
             elements.radialMenu.classList.add('closing');
@@ -1663,10 +1602,9 @@
       });
 
       document.addEventListener('click', (event) => {
-        if (elements.radialMenu.classList.contains('active') && 
-            !elements.radialMenu.contains(event.target) && 
+        if (elements.radialMenu.classList.contains('active') &&
+            !elements.radialMenu.contains(event.target) &&
             !elements.toggleBtn.contains(event.target)) {
-          console.log('Closing menu due to outside click');
           if (state.isToggling) return;
           state.isToggling = true;
           elements.toggleBtn.disabled = true;
@@ -1689,7 +1627,6 @@
         event.stopPropagation();
       });
 
-      // Search functionality
       const moduleNames = {
         emp_attendance: { name: 'Attendance', icon: 'https://img.icons8.com/color/24/calendar--v1.png' },
         emp_leave: { name: 'Leave', icon: 'https://img.icons8.com/color/24/beach.png' },
@@ -1733,7 +1670,7 @@
           return;
         }
         elements.autocompleteDropdown.innerHTML = '';
-        const results = Object.entries(moduleNames).filter(([key, module]) => 
+        const results = Object.entries(moduleNames).filter(([key, module]) =>
           module.name.toLowerCase().includes(query.toLowerCase())
         );
         if (results.length === 0) {
@@ -1863,11 +1800,11 @@
 
         if (response.ok) {
           if (data.accessToken) {
-            document.cookie = `accessToken=${data.accessToken}; maxAge=900; path=/`; // 15 minutes
+            document.cookie = `accessToken=${data.accessToken}; maxAge=900; path=/`;
             state.token = data.accessToken;
           }
           if (data.refreshToken) {
-            document.cookie = `refreshToken=${data.refreshToken}; maxAge=604800; path=/`; // 7 days
+            document.cookie = `refreshToken=${data.refreshToken}; maxAge=604800; path=/`;
             state.refreshToken = data.refreshToken;
           }
           if (data.user) {
@@ -1875,8 +1812,12 @@
             state.user = data.user;
           }
           if (data.personnel) {
-            localStorage.setItem('abccompanyempdetails', JSON.stringify(data.personnel));
-            state.personnelDetails = data.personnel;
+            try {
+              localStorage.setItem('abccompanyempdetails', JSON.stringify(data.personnel));
+              state.personnelDetails = data.personnel;
+            } catch (storageError) {
+              console.error('Failed to save personnel details:', storageError);
+            }
           }
           state.isAuthenticated = true;
           utils.showAlert('success', 'Login successful! Redirecting...');
@@ -1887,7 +1828,6 @@
           elements.passwordInput.value = '';
         }
       } catch (err) {
-        console.error('Login error:', err);
         elements.errorMessage.textContent = 'Error connecting to server';
         utils.showAlert('error', 'Error connecting to server');
       } finally {
@@ -1908,6 +1848,15 @@
   };
 
   const init = async () => {
+    const savedPersonnel = localStorage.getItem('abccompanyempdetails');
+    if (savedPersonnel) {
+      try {
+        state.personnelDetails = JSON.parse(savedPersonnel);
+      } catch (error) {
+        console.error("Failed to parse saved personnel details:", error);
+      }
+    }
+
     const isAuthenticated = await core.verifySession();
     if (isAuthenticated) {
       utils.showAlert('success', `Welcome back, ${state.user.username || 'User'}!`);
