@@ -63,3 +63,7 @@ INSERT INTO user_accounts (username, email, password, profile_image) VALUES
 -- Insert personnel data (based on employees table structure)
 INSERT INTO personnel (id, name, role, gender, dob, location, email, phone, join_date, experience, skills, achievement, profile_image) VALUES
 ('ATS0050', 'Sample User', 'Junior Java Developer', 'Male', '1998-04-15', 'Hyd', 'sample@gmail.com', '6789012345', '2024-07-01', 1, 'Java, Spring Boot, Hibernate', 'Completed major bug fix in first month', NULL);
+
+-- Insert personnel data (based on employees table structure)
+INSERT INTO personnel (id, name, role, gender, dob, location, email, phone, join_date, experience, skills, achievement, profile_image) VALUES
+('ATS0143', 'kunchala User', 'Junior Java Developer', 'Male', '1998-05-15', 'Hyd', 'kvenkat9889@gmail.com', '6789032345', '2024-08-01', 1, 'Java, Spring Boot, Hibernate', 'Completed major bug fix in first month', NULL);
