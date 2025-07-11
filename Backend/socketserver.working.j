@@ -1,6 +1,4 @@
 const express = require('express');
-const { createServer } = require('http');
-const { Server } = require('ws');
 const cors = require('cors');
 const winston = require('winston');
 const { combine, timestamp, printf, colorize } = winston.format;
@@ -14,8 +12,6 @@ const fs = require('fs');
 const retry = require('async-retry');
 
 const app = express();
-const server = createServer(app);
-const wss = new Server({ server });
 
 const logDir = './logs';
 if (!fs.existsSync(logDir)) {
@@ -189,67 +185,6 @@ pool.on('error', (err) => {
 const JWT_SECRET = process.env.JWT_SECRET || 'Abderoiouwi@12342';
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
-
-const clients = new Set();
-
-wss.on('connection', (ws, req) => {
-  const origin = req.headers.origin;
-  if (!allowedOrigins.includes(origin) && origin !== 'null') {
-    logger.warn(`WebSocket connection blocked: Invalid origin ${origin}`);
-    ws.close(1008, 'Origin not allowed');
-    return;
-  }
-
-  logger.info(`WebSocket client connected from ${origin || 'unknown'}`);
-  clients.add(ws);
-
-  ws.on('message', (message) => {
-    try {
-      const data = JSON.parse(message);
-      if (data.type === 'employeeDetails' && data.details) {
-        logger.debug('Received employee details:', data.details);
-        clients.forEach((client) => {
-          if (client !== ws && client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-              type: 'employeeDetails',
-              details: {
-                name: data.details.name,
-                email: data.details.email,
-                emp_id: data.details.emp_id
-              }
-            }));
-          }
-        });
-        logger.info('Broadcasted employee details:', data.details);
-      }
-    } catch (error) {
-      logger.error('WebSocket message error:', {
-        message: error.message,
-        stack: error.stack
-      });
-    }
-  });
-
-  ws.on('close', () => {
-    logger.info('WebSocket client disconnected');
-    clients.delete(ws);
-  });
-
-  ws.on('error', (error) => {
-    logger.error('WebSocket error:', {
-      message: error.message,
-      stack: error.stack
-    });
-    clients.delete(ws);
-  });
-});
-
-wss.on('error', (error) => {
-  logger.error('WebSocket server error:', {
-    message: error.message,
-    stack: error.stack
-  });
-});
 
 const verifyToken = (req, res, next) => {
   const token = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
@@ -495,7 +430,7 @@ app.post('/api/signup', upload.single('profileImage'), async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const profileImage = req.file ? `/Uploads/${req.file.filename}` : null;
+    const profileImage = req.file ? `/uploads/${req.file.filename}` : null;
 
     const result = await pool.query(
       `INSERT INTO user_accounts
@@ -908,9 +843,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3404;
-server.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Server running on http://44.223.23.145:${PORT}`);
-  logger.info(`WebSocket server running on ws://44.223.23.145:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  logger.info(`Server running on port ${PORT}`);
   logger.info(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
   logger.info(`Database config:`, {
@@ -940,25 +874,3 @@ setInterval(() => {
     rotateLogs();
   }
 }, 60 * 1000);
-
-process.on('SIGTERM', () => {
-  logger.info('Received SIGTERM. Closing server...');
-  wss.close(() => {
-    logger.info('WebSocket server closed');
-    server.close(() => {
-      logger.info('HTTP server closed');
-      process.exit(0);
-    });
-  });
-});
-
-process.on('SIGINT', () => {
-  logger.info('Received SIGINT. Closing server...');
-  wss.close(() => {
-    logger.info('WebSocket server closed');
-    server.close(() => {
-      logger.info('HTTP server closed');
-      process.exit(0);
-    });
-  });
-});

@@ -825,86 +825,6 @@
       text-decoration: underline;
     }
 
-    /* Modal Styles */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-      display: none;
-    }
-
-    .modal-content {
-      background-color: var(--light-color);
-      padding: 20px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: var(--shadow-xl);
-      position: relative;
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: var(--gray-700);
-    }
-
-    .modal-close:hover {
-      color: var(--primary-color);
-    }
-
-    .modal-title {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      color: var(--dark-color);
-    }
-
-    .modal-body {
-      max-height: 60vh;
-      overflow-y: auto;
-      font-size: 0.9rem;
-      color: var(--gray-700);
-    }
-
-    .modal-body p {
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .modal-body strong {
-      flex: 0 0 120px;
-    }
-
-    body.dark-mode .modal-content {
-      background-color: #1e293b;
-      color: #f8fafc;
-    }
-
-    body.dark-mode .modal-close {
-      color: #f8fafc;
-    }
-
-    body.dark-mode .modal-close:hover {
-      color: var(--primary-color);
-    }
-
-    body.dark-mode .modal-body {
-      color: #f8fafc;
-    }
-
     /* Responsive Styles */
     @media (max-width: 1024px) {
       .search-bar {
@@ -1140,7 +1060,7 @@
         <div class="input-container password-container">
           <input type="password" id="password" placeholder=" " required>
           <label for="password">Password</label>
-          <i class="fas fa-eye eye-icon" id="eyeIcon"></i>
+          <span class="eye-icon" id="eyeIcon"><i class="fas fa-eye"></i></span>
         </div>
         <button type="submit" class="login-button">Login</button>
       </form>
@@ -1154,7 +1074,7 @@
   <div id="dashboardView" class="hidden">
     <header class="header">
       <div class="logo-container">
-        <img src="logo.png" alt="Company Logo" class="logo" />
+        <img src="Astolite_Logo.png" alt="Company Logo" class="logo" />
       </div>
       <div class="header-right">
         <div class="search-bar" id="searchBar">
@@ -1164,9 +1084,6 @@
         </div>
         <div class="header-icon" id="themeToggle" title="Toggle theme">
           <i class="fas fa-moon"></i>
-        </div>
-        <div class="header-icon" id="infoIcon" title="Employee Details">
-          <i class="fas fa-info-circle"></i>
         </div>
         <div class="user-profile">
           <div class="skeleton" style="width:36px;height:36px;border-radius:50%;" id="avatarSkeleton"></div>
@@ -1305,27 +1222,12 @@
     <main class="main-content" id="mainContent">
       <iframe id="contentFrame" src="http://44.223.23.145:7999/" loading="lazy"></iframe>
     </main>
-
-    <!-- Employee Details Modal -->
-    <div class="modal" id="empDetailsModal">
-      <div class="modal-content">
-        <button class="modal-close" id="modalClose">×</button>
-        <h2 class="modal-title">Employee Details</h2>
-        <div class="modal-body" id="empDetailsContent">
-          <p><strong>Name:</strong> <span id="empName">Loading...</span></p>
-          <p><strong>Email:</strong> <span id="empEmail">Loading...</span></p>
-          <p><strong>Employee ID:</strong> <span id="empId">Loading...</span></p>
-          <p><strong>Department:</strong> <span id="empDepartment">Loading...</span></p>
-          <p><strong>Role:</strong> <span id="empRole">Loading...</span></p>
-        </div>
-      </div>
-    </div>
   </div>
-  <script>
+<script>
+
 document.addEventListener('DOMContentLoaded', async () => {
   const config = {
     apiBaseUrl: 'http://44.223.23.145:3404/api',
-    wsUrl: 'ws://44.223.23.145:3404',
     authUrls: {
       login: 'http://44.223.23.145:8012',
       signup: 'http://44.223.23.145:8013/',
@@ -1408,73 +1310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     isAuthenticated: false,
     isToggling: false,
     currentMenu: 'emp',
-    personnelDetails: null,
-    ws: null
-  };
-
-  const wsClient = {
-    connect: () => {
-      state.ws = new WebSocket(config.wsUrl);
-      
-      state.ws.onopen = () => {
-        console.log('WebSocket connection established');
-      };
-
-      state.ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'employeeDetails') {
-            state.personnelDetails = data.details;
-            try {
-              localStorage.setItem('abccompanyempdetails', JSON.stringify(data.details));
-              wsClient.populateFormFields(data.details);
-            } catch (storageError) {
-              console.error('Failed to save to localStorage:', storageError);
-            }
-          }
-        } catch (error) {
-          console.error('WebSocket message error:', error);
-        }
-      };
-
-      state.ws.onclose = () => {
-        console.log('WebSocket connection closed, attempting to reconnect...');
-        setTimeout(wsClient.connect, 5000);
-      };
-
-      state.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-    },
-
-    sendEmployeeDetails: (details) => {
-      if (state.ws && state.ws.readyState === WebSocket.OPEN) {
-        state.ws.send(JSON.stringify({
-          type: 'employeeDetails',
-          details: {
-            name: details.name,
-            email: details.email,
-            emp_id: details.emp_id
-          }
-        }));
-      }
-    },
-
-    populateFormFields: (details) => {
-      const fields = {
-        'name': details.name,
-        'email': details.email,
-        'emp_id': details.emp_id,
-        'employeeId': details.emp_id
-      };
-
-      Object.entries(fields).forEach(([fieldName, value]) => {
-        const input = document.querySelector(`input[name="${fieldName}"], input[id="${fieldName}"]`);
-        if (input) {
-          input.value = value || '';
-        }
-      });
-    }
+    personnelDetails: null
   };
 
   const utils = {
@@ -1564,7 +1400,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       elements.loginView.classList.remove('hidden');
       elements.dashboardView.classList.add('hidden');
       elements.emailInput.focus();
-      wsClient.connect();
     },
 
     showDashboardView: () => {
@@ -1574,7 +1409,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       core.initTheme();
       core.initNavigation();
       core.initSessionChecker();
-      wsClient.connect();
     },
 
     verifySession: async () => {
@@ -1595,8 +1429,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (state.personnelDetails) {
           try {
             localStorage.setItem('abccompanyempdetails', JSON.stringify(state.personnelDetails));
-            wsClient.sendEmployeeDetails(state.personnelDetails);
-            wsClient.populateFormFields(state.personnelDetails);
           } catch (storageError) {
             console.error('Failed to save to localStorage:', storageError);
           }
@@ -1904,9 +1736,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         credentials: 'include'
       })
       .then(() => {
-        if (state.ws) {
-          state.ws.close();
-        }
         localStorage.removeItem('abccompanyempdetails');
         sessionStorage.removeItem('user');
         document.cookie = 'accessToken=; Max-Age=0; path=/;';
@@ -1986,8 +1815,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
               localStorage.setItem('abccompanyempdetails', JSON.stringify(data.personnel));
               state.personnelDetails = data.personnel;
-              wsClient.sendEmployeeDetails(data.personnel);
-              wsClient.populateFormFields(data.personnel);
             } catch (storageError) {
               console.error('Failed to save personnel details:', storageError);
             }
@@ -2025,7 +1852,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (savedPersonnel) {
       try {
         state.personnelDetails = JSON.parse(savedPersonnel);
-        wsClient.populateFormFields(state.personnelDetails);
       } catch (error) {
         console.error("Failed to parse saved personnel details:", error);
       }
@@ -2043,7 +1869,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   init();
 });
-
 </script>
 </body>
 </html>
