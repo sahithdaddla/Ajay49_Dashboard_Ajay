@@ -619,7 +619,7 @@
                 <button type="submit" id="resetPasswordBtn" class="form-button" disabled>Reset Password</button>
             </form>
             <div class="links">
-                <a href="http://44.223.23.145:8012/">Back to Login</a>
+                <a href="http://13.60.36.119:8012/">Back to Login</a>
             </div>
         </div>
 
@@ -715,7 +715,7 @@ const checkEmail = debounce(async (email) => {
     }
 
     try {
-        const response = await fetch('http://44.223.23.145:3404/check-email-data', {
+        const response = await fetch('http://13.60.36.119:3404/check-email-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -821,7 +821,7 @@ document.getElementById('forgotPasswordForm').addEventListener('submit', async (
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
 
     try {
-        const response = await fetch('http://44.223.23.145:3404/api/forgot', {
+        const response = await fetch('http://13.60.36.119:3404/api/forgot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, newPassword, confirmNewPassword })
@@ -831,7 +831,7 @@ document.getElementById('forgotPasswordForm').addEventListener('submit', async (
         if (response.ok) {
             showAlert('success', data.message || 'Password reset successfully!');
             setTimeout(() => {
-                window.location.href = 'http://44.223.23.145:8012/';
+                window.location.href = 'http://13.60.36.119:8012/';
             }, 1000);
         } else {
             document.getElementById('confirm-password-error').textContent = data.error || 'Password reset failed';

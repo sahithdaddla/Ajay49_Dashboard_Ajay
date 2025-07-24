@@ -44,7 +44,7 @@ wss.on('connection', (ws) => {
 });
 
 wss.on('listening', () => {
-  console.log('WebSocket server running on ws://44.223.23.145:3404');
+  console.log('WebSocket server running on ws://13.60.36.119:3404');
 });
 
 wss.on('error', (error) => {
